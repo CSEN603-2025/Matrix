@@ -90,6 +90,13 @@ const CompanyDashboard = () => {
             ))}
           </ul>
         </div>
+        {/* Legal Document Upload */}
+<div style={{ marginTop: 20, background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px #eee' }}>
+  <h4 style={{ margin: '0 0 10px' }}>Legal Documents</h4>
+  <input type="file" accept=".pdf,.doc,.docx,.png,.jpg" />
+  <button className="btn btn-secondary" style={{ marginTop: 10 }}>Upload Document</button>
+</div>
+
         {/* Account Controls */}
         <div style={{ background: '#fff', borderRadius: 12, padding: 16, marginTop: 24, boxShadow: '0 2px 8px #eee' }}>
           <h4 style={{ margin: '0 0 10px' }}>Account</h4>
