@@ -18,6 +18,7 @@ const Sidebar = () => {
           { label: 'Logbook', path: '/student-dashboard/logbook', icon: '📔' },
           { label: 'Final Report', path: '/student-dashboard/report', icon: '📄' },
           { label: 'Schedule', path: '/student-dashboard/schedule', icon: '📅' },
+          { label: 'Workshops', path: '/student-dashboard/workshops', icon: '📅' },
           { label: 'Messages', path: '/student-dashboard/messages', icon: '💬' }
         ];
       case 'company':
@@ -27,6 +28,7 @@ const Sidebar = () => {
           { label: 'Applications', path: '/company-dashboard/applications', icon: '📝' },
           { label: 'Students', path: '/company-dashboard/students', icon: '👥' },
           { label: 'Reports', path: '/company-dashboard/reports', icon: '📈' },
+          { label: 'Workshops', path: '/company-dashboard/workshops', icon: '📅' },
           { label: 'Messages', path: '/company-dashboard/messages', icon: '💬' }
         ];
       case 'faculty':
@@ -36,6 +38,7 @@ const Sidebar = () => {
           { label: 'Companies', path: '/faculty-dashboard/companies', icon: '🏢' },
           { label: 'Reports', path: '/faculty-dashboard/reports', icon: '📈' },
           { label: 'Schedule', path: '/faculty-dashboard/schedule', icon: '📅' },
+          { label: 'Workshops', path: '/faculty-dashboard/workshops', icon: '📅' },
           { label: 'Messages', path: '/faculty-dashboard/messages', icon: '💬' }
         ];
       case 'scad_office':
@@ -45,6 +48,7 @@ const Sidebar = () => {
           { label: 'Companies', path: '/scad-dashboard/companies', icon: '🏢' },
           { label: 'Applications', path: '/scad-dashboard/applications', icon: '📝' },
           { label: 'Reports', path: '/scad-dashboard/reports', icon: '📈' },
+          { label: 'Workshops', path: '/scad-dashboard/workshops', icon: '📅' },
           { label: 'Settings', path: '/scad-dashboard/settings', icon: '⚙️' }
         ];
       default:

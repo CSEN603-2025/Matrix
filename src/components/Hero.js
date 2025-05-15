@@ -29,6 +29,9 @@ const Hero = () => {
       case 'student':
         navigate('/student-dashboard');
         break;
+      case 'pro_student':
+        navigate('/pro-student-dashboard');
+        break;
       case 'company':
         navigate('/company-dashboard');
         break;
@@ -72,6 +75,7 @@ const Hero = () => {
             <span className="auth-heading">{isLogin ? 'Login to Get Started' : 'Create Your Account'}</span>
           </p>
         </div>
+
         <form onSubmit={isLogin ? handleLogin : handleRegister} className="login-form">
           {!isLogin && (
             <input
@@ -99,19 +103,19 @@ const Hero = () => {
             required
             className="mb-4"
           />
-          {!isLogin && (
-            <select
-              value={credentials.role}
-              onChange={(e) => setCredentials({ ...credentials, role: e.target.value })}
-              className="role-select mb-6"
-              required
-            >
-              <option value="student">Student</option>
-              <option value="company">Company</option>
-              <option value="faculty">Faculty Member</option>
-              <option value="scad_office">SCAD Office</option>
-            </select>
-          )}
+          <select
+            value={credentials.role}
+            onChange={(e) => setCredentials({ ...credentials, role: e.target.value })}
+            className="role-select mb-4"
+            required
+          >
+            <option value="">Select your role</option>
+            <option value="student">Student</option>
+            <option value="pro_student">Pro Student</option>
+            <option value="company">Company</option>
+            <option value="faculty">Faculty Member</option>
+            <option value="scad_office">SCAD Office</option>
+          </select>
           <div className="auth-buttons flex flex-col gap-4">
             <button type="button" className="btn btn-secondary" onClick={toggleForm}>
               {isLogin ? 'New user? Sign up' : 'Already have an account? Sign in'}
@@ -121,7 +125,8 @@ const Hero = () => {
             </button>
           </div>
         </form>
-        <div className="hero-roles">
+
+        <div className="hero-roles mt-6">
           <div className="hero-role">
             <i className="fas fa-user-graduate role-icon"></i>
             <div>

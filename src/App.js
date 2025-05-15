@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
 import StudentDashboard from './components/dashboards/StudentDashboard';
 import CompanyDashboard from './components/dashboards/CompanyDashboard';
@@ -8,12 +10,16 @@ import SCADOfficeDashboard from './components/dashboards/SCADOfficeDashboard';
 import FacultyDashboard from './components/dashboards/FacultyDashboard';
 import Hero from './components/Hero';
 import Sidebar from './components/Sidebar';
+import EnhancementsPage from './components/EnhancementsPage';
+import Workshops from './components/workshops/Workshops';
+import ProStudentDashboard from './components/ProStudentDashboard';
 import './App.css';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ToastContainer position="top-right" autoClose={3000} />
         <div className="App">
           <Routes>
             <Route path="/" element={<Hero />} />
@@ -25,6 +31,19 @@ function App() {
                     <Sidebar />
                     <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
                       <StudentDashboard />
+                    </div>
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/student-dashboard/workshops"
+              element={
+                <ProtectedRoute allowedRoles={['student']}>
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <Workshops />
                     </div>
                   </div>
                 </ProtectedRoute>
@@ -44,6 +63,19 @@ function App() {
               }
             />
             <Route
+              path="/company-dashboard/workshops"
+              element={
+                <ProtectedRoute allowedRoles={['company']}>
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <Workshops />
+                    </div>
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/scad-dashboard/*"
               element={
                 <ProtectedRoute allowedRoles={['scad_office']}>
@@ -51,6 +83,19 @@ function App() {
                     <Sidebar />
                     <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
                       <SCADOfficeDashboard />
+                    </div>
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/scad-dashboard/workshops"
+              element={
+                <ProtectedRoute allowedRoles={['scad_office']}>
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <Workshops />
                     </div>
                   </div>
                 </ProtectedRoute>
@@ -69,6 +114,40 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/faculty-dashboard/workshops"
+              element={
+                <ProtectedRoute allowedRoles={['faculty']}>
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <Workshops />
+                    </div>
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/enhancements"
+              element={
+                <ProtectedRoute allowedRoles={['student', 'faculty', 'scad_office', 'company']}>
+                  <EnhancementsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pro-student-dashboard"
+              element={
+                <ProtectedRoute allowedRoles={['pro_student']}>
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <ProStudentDashboard />
+                    </div>
+                  </div>
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -76,16 +155,5 @@ function App() {
     </AuthProvider>
   );
 }
-import EnhancementsPage from './components/EnhancementsPage';
-
-<Route
-  path="/enhancements"
-  element={
-    <ProtectedRoute allowedRoles={['student', 'faculty', 'scad_office', 'company']}>
-      <EnhancementsPage />
-    </ProtectedRoute>
-  }
-/>
-
 
 export default App;
