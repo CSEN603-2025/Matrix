@@ -69,8 +69,6 @@ const Hero = () => {
         <p className="hero-subtitle">Connecting Students to Career-Ready Internships</p>
         <div className="hero-description">
           <p>
-            Join our community of innovators and start your journey to success.
-            <br />
             <span className="auth-heading">{isLogin ? 'Login to Get Started' : 'Create Your Account'}</span>
           </p>
         </div>
@@ -82,6 +80,7 @@ const Hero = () => {
               value={credentials.name}
               onChange={(e) => setCredentials({ ...credentials, name: e.target.value })}
               required
+              className="mb-4"
             />
           )}
           <input
@@ -90,6 +89,7 @@ const Hero = () => {
             value={credentials.email}
             onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
             required
+            className="mb-4"
           />
           <input
             type="password"
@@ -97,12 +97,13 @@ const Hero = () => {
             value={credentials.password}
             onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
             required
+            className="mb-4"
           />
           {!isLogin && (
             <select
               value={credentials.role}
               onChange={(e) => setCredentials({ ...credentials, role: e.target.value })}
-              className="role-select"
+              className="role-select mb-6"
               required
             >
               <option value="student">Student</option>
@@ -111,12 +112,12 @@ const Hero = () => {
               <option value="scad_office">SCAD Office</option>
             </select>
           )}
-          <div className="auth-buttons">
-            <button type="submit" className="btn btn-primary btn-large">
-              {isLogin ? 'Login' : 'Register'}
+          <div className="auth-buttons flex flex-col gap-4">
+            <button type="button" className="btn btn-secondary" onClick={toggleForm}>
+              {isLogin ? 'New user? Sign up' : 'Already have an account? Sign in'}
             </button>
-            <button type="button" className="btn btn-secondary btn-large" onClick={toggleForm}>
-              {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
+            <button type="submit" className="btn btn-primary">
+              {isLogin ? 'Sign In' : 'Create Account'}
             </button>
           </div>
         </form>
