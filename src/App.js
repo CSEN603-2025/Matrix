@@ -76,5 +76,16 @@ function App() {
     </AuthProvider>
   );
 }
+import EnhancementsPage from './components/EnhancementsPage';
+
+<Route
+  path="/enhancements"
+  element={
+    <ProtectedRoute allowedRoles={['student', 'faculty', 'scad_office', 'company']}>
+      <EnhancementsPage />
+    </ProtectedRoute>
+  }
+/>
+
 
 export default App;
