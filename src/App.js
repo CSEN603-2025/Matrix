@@ -7,6 +7,7 @@ import CompanyDashboard from './components/dashboards/CompanyDashboard';
 import SCADOfficeDashboard from './components/dashboards/SCADOfficeDashboard';
 import FacultyDashboard from './components/dashboards/FacultyDashboard';
 import Hero from './components/Hero';
+import Sidebar from './components/Sidebar';
 import './App.css';
 
 function App() {
@@ -17,34 +18,54 @@ function App() {
           <Routes>
             <Route path="/" element={<Hero />} />
             <Route
-              path="/student-dashboard"
+              path="/student-dashboard/*"
               element={
                 <ProtectedRoute allowedRoles={['student']}>
-                  <StudentDashboard />
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <StudentDashboard />
+                    </div>
+                  </div>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/company-dashboard"
+              path="/company-dashboard/*"
               element={
                 <ProtectedRoute allowedRoles={['company']}>
-                  <CompanyDashboard />
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <CompanyDashboard />
+                    </div>
+                  </div>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/scad-dashboard"
+              path="/scad-dashboard/*"
               element={
                 <ProtectedRoute allowedRoles={['scad_office']}>
-                  <SCADOfficeDashboard />
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <SCADOfficeDashboard />
+                    </div>
+                  </div>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/faculty-dashboard"
+              path="/faculty-dashboard/*"
               element={
                 <ProtectedRoute allowedRoles={['faculty']}>
-                  <FacultyDashboard />
+                  <div style={{ display: 'flex' }}>
+                    <Sidebar />
+                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
+                      <FacultyDashboard />
+                    </div>
+                  </div>
                 </ProtectedRoute>
               }
             />
@@ -55,5 +76,16 @@ function App() {
     </AuthProvider>
   );
 }
+import EnhancementsPage from './components/EnhancementsPage';
+
+<Route
+  path="/enhancements"
+  element={
+    <ProtectedRoute allowedRoles={['student', 'faculty', 'scad_office', 'company']}>
+      <EnhancementsPage />
+    </ProtectedRoute>
+  }
+/>
+
 
 export default App;
