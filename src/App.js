@@ -12,7 +12,6 @@ import Hero from './components/Hero';
 import Sidebar from './components/Sidebar';
 import EnhancementsPage from './components/EnhancementsPage';
 import Workshops from './components/workshops/Workshops';
-import ProStudentDashboard from './components/ProStudentDashboard';
 import './App.css';
 
 function App() {
@@ -132,19 +131,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['student', 'faculty', 'scad_office', 'company']}>
                   <EnhancementsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pro-student-dashboard"
-              element={
-                <ProtectedRoute allowedRoles={['pro_student']}>
-                  <div style={{ display: 'flex' }}>
-                    <Sidebar />
-                    <div style={{ marginLeft: '260px', width: 'calc(100% - 260px)' }}>
-                      <ProStudentDashboard />
-                    </div>
-                  </div>
                 </ProtectedRoute>
               }
             />

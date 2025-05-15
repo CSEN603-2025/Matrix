@@ -29,9 +29,6 @@ const Hero = () => {
       case 'student':
         navigate('/student-dashboard');
         break;
-      case 'pro_student':
-        navigate('/pro-student-dashboard');
-        break;
       case 'company':
         navigate('/company-dashboard');
         break;
@@ -111,7 +108,6 @@ const Hero = () => {
           >
             <option value="">Select your role</option>
             <option value="student">Student</option>
-            <option value="pro_student">Pro Student</option>
             <option value="company">Company</option>
             <option value="faculty">Faculty Member</option>
             <option value="scad_office">SCAD Office</option>
