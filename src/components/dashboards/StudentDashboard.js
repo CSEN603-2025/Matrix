@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 // Mock data for demonstration
@@ -42,6 +42,7 @@ const todos = [
 ];
 
 const notifications = [
+  { id: 1, from: 'SCAD Office', message: 'SCAD member appointment request', date: '2024-05-09', type: 'appointment' },
   { from: 'Admin', message: 'Internship fair next week!', date: '2024-05-09' },
   { from: 'Supervisor', message: 'Please update your logbook daily.', date: '2024-05-08' },
   { from: 'System', message: 'Your application was approved.', date: '2024-05-07' },
@@ -65,9 +66,60 @@ const urgencyColors = {
   false: '#FFD700', // not urgent
 };
 
+const videoCallAppointments = [
+  { 
+    id: 1, 
+    requestedBy: 'SCAD Office',
+    requestedFor: 'John Doe',
+    status: 'Pending', // Pending, Accepted, Rejected
+    date: '2024-05-15',
+    time: '10:00 AM',
+    duration: '30 minutes'
+  }
+];
+
 const StudentDashboard = () => {
   const { user } = useAuth();
   const logbookProgress = Math.round((logbook.daysCompleted / logbook.daysRequired) * 100);
+  const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
+  const [showDateTimeDialog, setShowDateTimeDialog] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [appointmentMade, setAppointmentMade] = useState(false);
+  const [showIncomingCall, setShowIncomingCall] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  const [isCameraEnabled, setIsCameraEnabled] = useState(true);
+  const [isMicMuted, setIsMicMuted] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [showCallerLeft, setShowCallerLeft] = useState(false);
+
+  const handleRequestAppointment = () => {
+    setAppointmentMade(true);
+    setTimeout(() => setAppointmentMade(false), 3000);
+  };
+
+  const handleDateTimeSubmit = () => {
+    setShowDateTimeDialog(false);
+    // After date/time is selected, show incoming call notification after a short delay
+    setTimeout(() => {
+      setShowIncomingCall(true);
+    }, 1000);
+  };
+
+  const handleAnswerCall = () => {
+    setShowIncomingCall(false);
+    setShowVideoCall(true);
+    // Auto close call after 50 seconds
+    setTimeout(() => {
+      setShowVideoCall(false);
+      setShowCallerLeft(true);
+      setTimeout(() => setShowCallerLeft(false), 3000);
+    }, 50000);
+  };
+
+  const handleEndCall = () => {
+    setShowVideoCall(false);
+  };
 
   return (
     <div className="dashboard" style={{ display: 'flex', gap: '2rem' }}>
@@ -97,9 +149,312 @@ const StudentDashboard = () => {
                 <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ color: '#A49393', textDecoration: 'underline', fontSize: 15 }}>{link.label}</a>
               </li>
             ))}
+            <li style={{ marginBottom: 8 }}>
+              <a 
+                href="#" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  handleRequestAppointment(); 
+                }} 
+                style={{ color: '#A49393', textDecoration: 'underline', fontSize: 15 }}
+              >
+                Request Video Call Appointment
+              </a>
+            </li>
           </ul>
         </div>
+
+        {/* Incoming Call Notification - Positioned under Useful Links */}
+        {showIncomingCall && (
+          <div style={{
+            background: '#fff',
+            padding: '1rem',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            marginTop: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <div style={{ fontSize: '24px' }}>📞</div>
+            <div>
+              <div style={{ fontWeight: 600 }}>Incoming call from SCAD member</div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={handleAnswerCall}
+                style={{
+                  padding: '8px 16px',
+                  background: '#4CAF50',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Answer
+              </button>
+              <button
+                onClick={() => setShowIncomingCall(false)}
+                style={{
+                  padding: '8px 16px',
+                  background: '#F44336',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Date/Time Selection Dialog */}
+      {showDateTimeDialog && (
+        <div style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{ 
+            background: '#fff',
+            padding: '20px',
+            borderRadius: '12px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 15px', color: '#67595E' }}>Choose Date and Time</h3>
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#67595E' }}>Date:</label>
+              <input 
+                type="date" 
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                style={{ 
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  border: '1px solid #ccc'
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', color: '#67595E' }}>Time:</label>
+              <input 
+                type="time" 
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                style={{ 
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  border: '1px solid #ccc'
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                onClick={() => setShowDateTimeDialog(false)}
+                style={{ 
+                  padding: '8px 16px',
+                  border: '1px solid #ccc',
+                  borderRadius: '6px',
+                  background: '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDateTimeSubmit}
+                style={{ 
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#E8B4B8',
+                  color: '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Call Interface */}
+      {showVideoCall && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '60%',
+          height: '70vh',
+          background: '#1a1a1a',
+          borderRadius: '12px',
+          zIndex: 1001,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '1rem'
+        }}>
+          {/* Main Video Area */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#fff',
+            fontSize: '1.2rem'
+          }}>
+            {isCameraEnabled ? 'Camera View' : 'Camera Disabled'}
+          </div>
+
+          {/* Control Bar */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '1rem',
+            padding: '1rem',
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: '12px'
+          }}>
+            {/* Camera Toggle */}
+            <button
+              onClick={() => setIsCameraEnabled(!isCameraEnabled)}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                border: 'none',
+                background: isCameraEnabled ? '#fff' : '#666',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}
+            >
+              {isCameraEnabled ? '📹' : '🚫'}
+            </button>
+
+            {/* Microphone Toggle */}
+            <button
+              onClick={() => setIsMicMuted(!isMicMuted)}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                border: 'none',
+                background: '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px',
+                position: 'relative'
+              }}
+            >
+              🎤
+              {isMicMuted && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%) rotate(-45deg)',
+                  width: '2px',
+                  height: '30px',
+                  background: '#F44336'
+                }}/>
+              )}
+            </button>
+
+            {/* Screen Share */}
+            <button
+              onClick={() => setIsScreenSharing(!isScreenSharing)}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                border: 'none',
+                background: isScreenSharing ? '#E8B4B8' : '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}
+            >
+              💻
+            </button>
+
+            {/* End Call */}
+            <button
+              onClick={handleEndCall}
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                border: 'none',
+                background: '#F44336',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}
+            >
+              📞
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Messages */}
+      {appointmentMade && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#4CAF50',
+          color: '#fff',
+          padding: '10px 20px',
+          borderRadius: '6px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000
+        }}>
+          Appointment made!
+        </div>
+      )}
+
+      {showCallerLeft && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#F44336',
+          color: '#fff',
+          padding: '10px 20px',
+          borderRadius: '6px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000
+        }}>
+          Caller has left
+        </div>
+      )}
 
       {/* Main Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -118,6 +473,51 @@ const StudentDashboard = () => {
               <div style={{ marginTop: 4 }}>Supervisor: <b>{studentProfile.assignedSupervisor}</b></div>
             )}
           </div>
+        </div>
+
+        {/* Add this section after the Welcome Banner */}
+        <div className="dashboard-section" style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <h3 style={{ margin: 0 }}>Video Call Appointments</h3>
+          </div>
+          {videoCallAppointments.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
+              <thead style={{ background: '#E8B4B8' }}>
+                <tr>
+                  <th style={{ padding: 12, textAlign: 'left' }}>Requested By</th>
+                  <th style={{ padding: 12, textAlign: 'left' }}>Date</th>
+                  <th style={{ padding: 12, textAlign: 'left' }}>Time</th>
+                  <th style={{ padding: 12, textAlign: 'left' }}>Duration</th>
+                  <th style={{ padding: 12, textAlign: 'left' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {videoCallAppointments.map((appointment) => (
+                  <tr key={appointment.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: 12 }}>{appointment.requestedBy}</td>
+                    <td style={{ padding: 12 }}>{appointment.date}</td>
+                    <td style={{ padding: 12 }}>{appointment.time}</td>
+                    <td style={{ padding: 12 }}>{appointment.duration}</td>
+                    <td style={{ padding: 12 }}>
+                      <span style={{ 
+                        background: appointment.status === 'Pending' ? '#FFD700' : 
+                                  appointment.status === 'Accepted' ? '#4CAF50' : '#F44336',
+                        color: '#fff',
+                        borderRadius: 8,
+                        padding: '2px 10px'
+                      }}>
+                        {appointment.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{ padding: 20, textAlign: 'center', color: '#67595E' }}>
+              No pending video call appointments
+            </div>
+          )}
         </div>
 
         {/* Logbook Section */}
@@ -173,15 +573,39 @@ const StudentDashboard = () => {
           </ul>
         </div>
 
-        {/* Notifications Panel */}
+        {/* Notifications Panel - Modified */}
         <div className="dashboard-section" style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <h3 style={{ margin: 0 }}>Notifications</h3>
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {notifications.map((note, idx) => (
-              <li key={idx} style={{ marginBottom: 8, padding: 8, background: '#fafafa', borderRadius: 6, cursor: 'pointer', borderLeft: `4px solid ${note.from === 'Admin' ? '#E8B4B8' : note.from === 'Supervisor' ? '#4CAF50' : '#A49393'}` }}>
-                <b>{note.from}:</b> {note.message} <span style={{ color: '#A49393', fontSize: 13, float: 'right' }}>{note.date}</span>
+              <li key={idx} style={{ 
+                marginBottom: 8, 
+                padding: 8, 
+                background: '#fafafa', 
+                borderRadius: 6,
+                borderLeft: `4px solid ${note.from === 'Admin' ? '#E8B4B8' : note.from === 'Supervisor' ? '#4CAF50' : '#A49393'}`
+              }}>
+                <b>{note.from}:</b> {note.message}
+                {note.type === 'appointment' && (
+                  <button
+                    onClick={() => setShowDateTimeDialog(true)}
+                    style={{
+                      float: 'right',
+                      padding: '4px 12px',
+                      background: '#E8B4B8',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      marginLeft: '8px'
+                    }}
+                  >
+                    Respond
+                  </button>
+                )}
+                <span style={{ color: '#A49393', fontSize: 13, float: 'right' }}>{note.date}</span>
               </li>
             ))}
           </ul>
