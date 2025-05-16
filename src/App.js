@@ -33,6 +33,7 @@ import SubmitReport from './components/reports/SubmitReport';
 import StudentReportsList from './components/reports/StudentReportsList';
 import SCADInternships from './components/internships/SCADInternships';
 import SCADStudentStatus from './components/dashboards/SCADStudentStatus';
+import { ToastProvider } from './context/ToastContext';
 import './App.css';
 
 const AppContent = () => {
@@ -306,6 +307,7 @@ const AppContent = () => {
 
 const App = () => {
   return (
+<<<<<<< HEAD
     <Router>
       <AuthProvider>
         <NotificationProvider>
@@ -322,6 +324,22 @@ const App = () => {
         </NotificationProvider>
       </AuthProvider>
     </Router>
+=======
+    <ToastProvider>
+      <Router>
+        <AuthProvider>
+          <EvaluationsProvider>
+            <ReportsProvider>
+              <CoursesProvider>
+                <AppContent />
+                <ToastContainer position="bottom-right" />
+              </CoursesProvider>
+            </ReportsProvider>
+          </EvaluationsProvider>
+        </AuthProvider>
+      </Router>
+    </ToastProvider>
+>>>>>>> 0280bdfa1d1993be5aa08ac8aabbc14a8ee302a3
   );
 };
 

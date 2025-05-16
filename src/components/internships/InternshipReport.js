@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useReports } from '../../context/ReportsContext';
+import { useToast } from '../../context/ToastContext';
 
 const InternshipReport = ({ internship, initialReport = null, isEditing: initialIsEditing = false }) => {
   const { addReport, updateReport, deleteReport, getReportByInternshipId } = useReports();
+  const { showToast } = useToast();
   const [isEditing, setIsEditing] = useState(initialIsEditing);
   const [report, setReport] = useState(null);
   const [formData, setFormData] = useState({
@@ -10,6 +12,7 @@ const InternshipReport = ({ internship, initialReport = null, isEditing: initial
     introduction: '',
     body: ''
   });
+  const [lastStatus, setLastStatus] = useState(null);
 
   useEffect(() => {
     if (initialReport) {
@@ -36,6 +39,15 @@ const InternshipReport = ({ internship, initialReport = null, isEditing: initial
     setIsEditing(initialIsEditing);
   }, [initialIsEditing]);
 
+  useEffect(() => {
+    if (report && report.status !== lastStatus) {
+      if (lastStatus !== null) {
+        showToast(`Your internship report status is now: ${report.status}`);
+      }
+      setLastStatus(report.status);
+    }
+  }, [report?.status, lastStatus, showToast]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -47,10 +59,10 @@ const InternshipReport = ({ internship, initialReport = null, isEditing: initial
   const handleSubmit = (e) => {
     e.preventDefault();
     if (report) {
-      updateReport(report.id, formData);
-      setReport({ ...report, ...formData });
+      updateReport(report.id, { ...formData, status: 'Submitted' });
+      setReport({ ...report, ...formData, status: 'Submitted' });
     } else {
-      const newReport = addReport(internship.id, formData);
+      const newReport = addReport(internship.id, { ...formData, status: 'Submitted' });
       setReport(newReport);
     }
     setIsEditing(false);

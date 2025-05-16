@@ -99,6 +99,28 @@ const videoCallAppointments = [
   }
 ];
 
+// Add mock assessments at the top
+const assessments = [
+  {
+    id: 1,
+    title: 'JavaScript Basics',
+    question: 'What is the output of: console.log(typeof null)?',
+    correctAnswer: 'object',
+  },
+  {
+    id: 2,
+    title: 'Python Fundamentals',
+    question: 'What is the output of: print(type([]))?',
+    correctAnswer: "<class 'list'>",
+  },
+  {
+    id: 3,
+    title: 'Data Structures',
+    question: 'Which data structure uses FIFO order?',
+    correctAnswer: 'queue',
+  },
+];
+
 const ProStudentDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -119,6 +141,12 @@ const ProStudentDashboard = () => {
   const [assessmentAnswer, setAssessmentAnswer] = useState('');
   const [showScoreDialog, setShowScoreDialog] = useState(false);
   const [finalReportState, setFinalReportState] = useState(finalReport);
+  // Add state for selected assessment, answer, score, and post option
+  const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const [assessmentUserAnswer, setAssessmentUserAnswer] = useState('');
+  const [assessmentScore, setAssessmentScore] = useState(null);
+  const [showPostScoreOption, setShowPostScoreOption] = useState(false);
+  const [postedScores, setPostedScores] = useState([]);
 
   const handleRequestAppointment = () => {
     setAppointmentMade(true);
@@ -191,22 +219,34 @@ const ProStudentDashboard = () => {
             <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px #eee', marginTop: 16 }}>
               <h4 style={{ margin: '0 0 10px' }}>Online Assessments</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: 8 }}>
-                  <button 
-                    onClick={() => setShowAssessment(true)}
-                    style={{ 
-                      background: 'none',
-                      border: 'none',
-                      color: '#A49393',
-                      textDecoration: 'underline',
-                      fontSize: 15,
-                      cursor: 'pointer',
-                      padding: 0
-                    }}
-                  >
-                    Online Assessment 1
-                  </button>
-                </li>
+                {assessments.map((a) => (
+                  <li key={a.id} style={{ marginBottom: 8 }}>
+                    <button
+                      onClick={() => {
+                        setSelectedAssessment(a);
+                        setAssessmentUserAnswer('');
+                        setAssessmentScore(null);
+                        setShowPostScoreOption(false);
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#A49393',
+                        textDecoration: 'underline',
+                        fontSize: 15,
+                        cursor: 'pointer',
+                        padding: 0
+                      }}
+                    >
+                      {a.title}
+                    </button>
+                    {postedScores.find(s => s.id === a.id) && (
+                      <span style={{ color: '#4CAF50', marginLeft: 8 }}>
+                        (Score Posted: {postedScores.find(s => s.id === a.id).score}/1)
+                      </span>
+                    )}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -455,8 +495,8 @@ const ProStudentDashboard = () => {
           </div>
 
           {/* Assessment Modal */}
-          {showAssessment && (
-            <div style={{ 
+          {selectedAssessment && (
+            <div style={{
               position: 'fixed',
               top: 0,
               left: 0,
@@ -468,136 +508,68 @@ const ProStudentDashboard = () => {
               alignItems: 'center',
               zIndex: 1000
             }}>
-              <div style={{ 
+              <div style={{
                 background: '#fff',
                 padding: '20px',
                 borderRadius: '12px',
                 width: '60%',
-                maxHeight: '80vh',
-                overflowY: 'auto',
+                maxWidth: 500,
                 boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h3 style={{ margin: 0, color: '#67595E' }}>Online Assessment 1</h3>
-                  <button 
+                <h3 style={{ margin: 0, color: '#67595E' }}>{selectedAssessment.title}</h3>
+                <div style={{ margin: '20px 0' }}>
+                  <pre style={{ background: '#f5f5f5', padding: '15px', borderRadius: '8px', fontFamily: 'monospace' }}>{selectedAssessment.question}</pre>
+                </div>
+                <input
+                  type="text"
+                  value={assessmentUserAnswer}
+                  onChange={e => setAssessmentUserAnswer(e.target.value)}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc', marginBottom: 16 }}
+                  placeholder="Enter your answer..."
+                  disabled={assessmentScore !== null}
+                />
+                {assessmentScore === null ? (
+                  <button
                     onClick={() => {
-                      setShowAssessment(false);
-                      setAssessmentAnswer('');
+                      if (assessmentUserAnswer.trim().toLowerCase() === selectedAssessment.correctAnswer.toLowerCase()) {
+                        setAssessmentScore(1);
+                        setShowPostScoreOption(true);
+                      } else {
+                        setAssessmentScore(0);
+                        setShowPostScoreOption(true);
+                      }
                     }}
-                    style={{ 
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '20px',
-                      cursor: 'pointer',
-                      color: '#67595E'
-                    }}
+                    style={{ padding: '8px 16px', background: '#E8B4B8', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                   >
-                    ×
+                    Submit Answer
                   </button>
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                  <pre style={{ 
-                    background: '#f5f5f5',
-                    padding: '15px',
-                    borderRadius: '8px',
-                    overflowX: 'auto',
-                    fontFamily: 'monospace'
-                  }}>
-                    {codingProblem.question}
-                  </pre>
-                </div>
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Your Answer:</label>
-                  <input 
-                    type="text"
-                    value={assessmentAnswer}
-                    onChange={(e) => setAssessmentAnswer(e.target.value)}
-                    style={{ 
-                      width: '100%',
-                      padding: '8px',
-                      borderRadius: '6px',
-                      border: '1px solid #ccc'
-                    }}
-                    placeholder="Enter your answer..."
-                  />
-                </div>
-                <button 
+                ) : (
+                  <div style={{ marginTop: 16 }}>
+                    <div>Your Score: {assessmentScore}/1</div>
+                    {showPostScoreOption && !postedScores.find(s => s.id === selectedAssessment.id) && (
+                      <button
+                        onClick={() => {
+                          setPostedScores([...postedScores, { id: selectedAssessment.id, score: assessmentScore }]);
+                          setShowPostScoreOption(false);
+                        }}
+                        style={{ marginTop: 12, padding: '8px 16px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                      >
+                        Post Score to Profile
+                      </button>
+                    )}
+                  </div>
+                )}
+                <button
                   onClick={() => {
-                    if (assessmentAnswer === codingProblem.correctAnswer) {
-                      setShowScoreDialog(true);
-                      setShowAssessment(false);
-                    } else {
-                      alert('Incorrect answer. Try again!');
-                    }
+                    setSelectedAssessment(null);
+                    setAssessmentUserAnswer('');
+                    setAssessmentScore(null);
+                    setShowPostScoreOption(false);
                   }}
-                  style={{ 
-                    padding: '8px 16px',
-                    background: '#E8B4B8',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
-                  }}
+                  style={{ marginTop: 16, padding: '8px 16px', background: '#F44336', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                 >
-                  Submit Answer
+                  Close
                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* Score Dialog */}
-          {showScoreDialog && (
-            <div style={{ 
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 1000
-            }}>
-              <div style={{ 
-                background: '#fff',
-                padding: '20px',
-                borderRadius: '12px',
-                maxWidth: '400px',
-                width: '90%',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
-              }}>
-                <h3 style={{ margin: '0 0 15px', color: '#67595E', textAlign: 'center' }}>Congratulations!</h3>
-                <p style={{ textAlign: 'center', marginBottom: '20px' }}>You scored 5/5.</p>
-                <p style={{ textAlign: 'center', marginBottom: '20px' }}>Would you like to share your score?</p>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                  <button 
-                    onClick={() => setShowScoreDialog(false)}
-                    style={{ 
-                      padding: '8px 16px',
-                      background: '#E8B4B8',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Share Score
-                  </button>
-                  <button 
-                    onClick={() => setShowScoreDialog(false)}
-                    style={{ 
-                      padding: '8px 16px',
-                      background: '#ccc',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
               </div>
             </div>
           )}
@@ -696,6 +668,97 @@ const ProStudentDashboard = () => {
         path="/applied-internships"
         element={<AppliedInternships />}
       />
+      <Route path="/assessments" element={
+        <div style={{ maxWidth: 600, margin: '2rem auto', background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 32 }}>
+          <h2 style={{ color: '#E8B4B8', marginBottom: 24 }}>Online Assessments</h2>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {assessments.map((a) => (
+              <li key={a.id} style={{ marginBottom: 16 }}>
+                <button
+                  onClick={() => {
+                    setSelectedAssessment(a);
+                    setAssessmentUserAnswer('');
+                    setAssessmentScore(null);
+                    setShowPostScoreOption(false);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#A49393',
+                    textDecoration: 'underline',
+                    fontSize: 18,
+                    cursor: 'pointer',
+                    padding: 0
+                  }}
+                >
+                  {a.title}
+                </button>
+                {postedScores.find(s => s.id === a.id) && (
+                  <span style={{ color: '#4CAF50', marginLeft: 8 }}>
+                    (Score Posted: {postedScores.find(s => s.id === a.id).score}/1)
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          {selectedAssessment && (
+            <div style={{ marginTop: 32, background: '#f9f9f9', borderRadius: 8, padding: 24 }}>
+              <h3 style={{ color: '#67595E' }}>{selectedAssessment.title}</h3>
+              <pre style={{ background: '#f5f5f5', padding: '15px', borderRadius: '8px', fontFamily: 'monospace', margin: '16px 0' }}>{selectedAssessment.question}</pre>
+              <input
+                type="text"
+                value={assessmentUserAnswer}
+                onChange={e => setAssessmentUserAnswer(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc', marginBottom: 16 }}
+                placeholder="Enter your answer..."
+                disabled={assessmentScore !== null}
+              />
+              {assessmentScore === null ? (
+                <button
+                  onClick={() => {
+                    if (assessmentUserAnswer.trim().toLowerCase() === selectedAssessment.correctAnswer.toLowerCase()) {
+                      setAssessmentScore(1);
+                      setShowPostScoreOption(true);
+                    } else {
+                      setAssessmentScore(0);
+                      setShowPostScoreOption(true);
+                    }
+                  }}
+                  style={{ padding: '8px 16px', background: '#E8B4B8', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                >
+                  Submit Answer
+                </button>
+              ) : (
+                <div style={{ marginTop: 16 }}>
+                  <div>Your Score: {assessmentScore}/1</div>
+                  {showPostScoreOption && !postedScores.find(s => s.id === selectedAssessment.id) && (
+                    <button
+                      onClick={() => {
+                        setPostedScores([...postedScores, { id: selectedAssessment.id, score: assessmentScore }]);
+                        setShowPostScoreOption(false);
+                      }}
+                      style={{ marginTop: 12, padding: '8px 16px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                    >
+                      Post Score to Profile
+                    </button>
+                  )}
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  setSelectedAssessment(null);
+                  setAssessmentUserAnswer('');
+                  setAssessmentScore(null);
+                  setShowPostScoreOption(false);
+                }}
+                style={{ marginTop: 16, padding: '8px 16px', background: '#F44336', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </div>
+      } />
     </Routes>
   );
 };

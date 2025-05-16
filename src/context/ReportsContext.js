@@ -149,6 +149,16 @@ export const ReportsProvider = ({ children }) => {
     return reports.find(report => report.internshipId === internshipId);
   };
 
+  const submitReport = (reportId) => {
+    setReports(prev =>
+      prev.map(report =>
+        report.id === reportId
+          ? { ...report, status: 'Submitted', lastModified: new Date().toISOString().split('T')[0] }
+          : report
+      )
+    );
+  };
+
   return (
     <ReportsContext.Provider
       value={{
@@ -156,7 +166,8 @@ export const ReportsProvider = ({ children }) => {
         addReport,
         updateReport,
         deleteReport,
-        getReportByInternshipId
+        getReportByInternshipId,
+        submitReport
       }}
     >
       {children}
