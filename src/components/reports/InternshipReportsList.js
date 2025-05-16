@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { useReports } from '../../context/ReportsContext';
 import InternshipReport from '../internships/InternshipReport';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 
 const InternshipReportsList = () => {
   const { reports, deleteReport, submitReport } = useReports();
+  const { showToast } = useToast();
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const [appealMessage, setAppealMessage] = useState('');
+  const [showAppealForm, setShowAppealForm] = useState(false);
 
   const handleDelete = (reportId) => {
     if (window.confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
@@ -20,6 +24,16 @@ const InternshipReportsList = () => {
   const handleSubmit = (report) => {
     if (window.confirm('Are you sure you want to submit this report? Once submitted, it cannot be edited.')) {
       submitReport(report.id);
+      showToast('Report submitted successfully!');
+    }
+  };
+
+  const handleAppealSubmit = () => {
+    if (selectedReport) {
+      selectedReport.appealMessage = appealMessage;
+      showToast('Appeal submitted!');
+      setShowAppealForm(false);
+      setAppealMessage('');
     }
   };
 
@@ -161,13 +175,16 @@ const InternshipReportsList = () => {
             maxWidth: 1000,
             maxHeight: '90vh',
             overflow: 'auto',
-            position: 'relative'
+            position: 'relative',
+            padding: 32
           }}>
             <button
               onClick={() => {
                 setShowReport(false);
                 setSelectedReport(null);
                 setIsEditing(false);
+                setShowAppealForm(false);
+                setAppealMessage('');
               }}
               style={{
                 position: 'absolute',
@@ -187,6 +204,51 @@ const InternshipReportsList = () => {
               initialReport={selectedReport}
               isEditing={isEditing}
             />
+            {(selectedReport.status === 'Flagged' || selectedReport.status === 'Rejected') && selectedReport.clarification && (
+              <div style={{ marginTop: 24, background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: 8, padding: 16 }}>
+                <strong>Comments from Reviewer:</strong>
+                <p style={{ margin: '8px 0 0 0', color: '#ad6800' }}>{selectedReport.clarification}</p>
+              </div>
+            )}
+            {(selectedReport.status === 'Flagged' || selectedReport.status === 'Rejected') && !showAppealForm && (
+              <button
+                style={{ marginTop: 24, background: '#E8B4B8', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, cursor: 'pointer' }}
+                onClick={() => setShowAppealForm(true)}
+              >
+                Appeal
+              </button>
+            )}
+            {showAppealForm && (
+              <div style={{ marginTop: 24 }}>
+                <textarea
+                  value={appealMessage}
+                  onChange={e => setAppealMessage(e.target.value)}
+                  placeholder="Write your appeal message here..."
+                  style={{ width: '100%', minHeight: 80, borderRadius: 8, border: '1px solid #ddd', padding: 12, fontSize: 15 }}
+                />
+                <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+                  <button
+                    style={{ background: '#E8B4B8', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 20px', fontWeight: 600, cursor: 'pointer' }}
+                    onClick={handleAppealSubmit}
+                    disabled={!appealMessage.trim()}
+                  >
+                    Submit Appeal
+                  </button>
+                  <button
+                    style={{ background: '#fff', color: '#E8B4B8', border: '1px solid #E8B4B8', borderRadius: 8, padding: '8px 20px', fontWeight: 600, cursor: 'pointer' }}
+                    onClick={() => { setShowAppealForm(false); setAppealMessage(''); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            {(selectedReport.appealMessage && !showAppealForm) && (
+              <div style={{ marginTop: 24, background: '#f0f5ff', border: '1px solid #adc6ff', borderRadius: 8, padding: 16 }}>
+                <strong>Your Appeal:</strong>
+                <p style={{ margin: '8px 0 0 0', color: '#2f54eb' }}>{selectedReport.appealMessage}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

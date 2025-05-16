@@ -38,6 +38,7 @@ const Sidebar = () => {
           { label: 'Internship Reports', path: '/my-reports', icon: '📄' },
           { label: 'Suggested Companies', path: '/pro-student-dashboard/suggested-companies', icon: '🏢' },
           { label: 'Workshops', path: '/pro-student-dashboard/workshops', icon: '📅' },
+          { label: 'Online Assessments', path: '/pro-student-dashboard/assessments', icon: '📝' },
           { label: 'Messages', path: '/pro-student-dashboard/messages', icon: '💬' }
         ];
       case 'company':

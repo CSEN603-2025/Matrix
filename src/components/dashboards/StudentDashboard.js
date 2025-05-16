@@ -28,12 +28,6 @@ const applications = [
   { company: 'Green Energy Corp.', date: '2024-03-20', status: 'Rejected', canWithdraw: false },
 ];
 
-const logbook = {
-  daysCompleted: 45,
-  daysRequired: 60,
-  lastLogDate: '2024-05-10',
-};
-
 const finalReport = {
   status: 'Submitted', // Not Uploaded, Submitted, Reviewed
   downloadUrl: '#',
@@ -102,6 +96,11 @@ const videoCallAppointments = [
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [logbook, setLogbook] = useState({
+    daysCompleted: 45,
+    daysRequired: 90,
+    lastLogDate: '2024-05-10',
+  });
   const logbookProgress = Math.round((logbook.daysCompleted / logbook.daysRequired) * 100);
   const [appointments, setAppointments] = useState(videoCallAppointments);
   const [showAppointmentDialog, setShowAppointmentDialog] = useState(false);
@@ -119,6 +118,10 @@ const StudentDashboard = () => {
   const [assessmentAnswer, setAssessmentAnswer] = useState('');
   const [showScoreDialog, setShowScoreDialog] = useState(false);
   const [finalReportState, setFinalReportState] = useState(finalReport);
+  const [assessmentUserAnswer, setAssessmentUserAnswer] = useState('');
+  const [assessmentScore, setAssessmentScore] = useState(null);
+  const [showPostScoreOption, setShowPostScoreOption] = useState(false);
+  const [postedScores, setPostedScores] = useState([]);
 
   const handleRequestAppointment = () => {
     setAppointmentMade(true);
@@ -173,7 +176,21 @@ const StudentDashboard = () => {
                   {user?.name?.[0] || 'S'}
                 </div>
               )}
-              <h3 style={{ margin: '8px 0 4px' }}>{user?.name || studentProfile.name}</h3>
+              <h3 style={{ margin: '8px 0 4px' }}>{user?.name || studentProfile.name}
+                {logbook.daysCompleted >= 90 && (
+                  <span style={{
+                    marginLeft: 8,
+                    background: '#E8B4B8',
+                    color: '#fff',
+                    borderRadius: 8,
+                    padding: '2px 10px',
+                    fontSize: 13,
+                    fontWeight: 600
+                  }}>
+                    Pro Student
+                  </span>
+                )}
+              </h3>
               <div style={{ fontSize: 14, color: '#67595E' }}>{studentProfile.major}</div>
               <div style={{ fontSize: 13, color: '#A49393', margin: '8px 0' }}>{studentProfile.email}</div>
               <div style={{ fontSize: 13, color: '#A49393' }}>ID: {studentProfile.id}</div>
@@ -209,184 +226,10 @@ const StudentDashboard = () => {
             </div>
 
             {/* Profile Views Box */}
-            <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px #eee', marginTop: 16 }}>
-              <h4 style={{ margin: '0 0 10px' }}>Profile Views</h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: 8, color: '#67595E', fontSize: 15 }}>Giza Systems</li>
-                <li style={{ marginBottom: 8, color: '#67595E', fontSize: 15 }}>Elsewedy Electric</li>
-                <li style={{ marginBottom: 8, color: '#67595E', fontSize: 15 }}>Siemens</li>
-                <li style={{ marginBottom: 8, color: '#67595E', fontSize: 15 }}>Valeo</li>
-              </ul>
-            </div>
+            {/* Removed as per instructions */}
 
             {/* Online Assessments Box */}
-            <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px #eee', marginTop: 16 }}>
-              <h4 style={{ margin: '0 0 10px' }}>Online Assessments</h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: 8 }}>
-                  <button 
-                    onClick={() => setShowAssessment(true)}
-                    style={{ 
-                      background: 'none',
-                      border: 'none',
-                      color: '#A49393',
-                      textDecoration: 'underline',
-                      fontSize: 15,
-                      cursor: 'pointer',
-                      padding: 0
-                    }}
-                  >
-                    Online Assessment 1
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Add Applied Internships Link */}
-            <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px #eee', marginTop: 16 }}>
-              <h4 style={{ margin: '0 0 10px' }}>Internships</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button
-                  onClick={() => navigate('/student-dashboard/applied-internships')}
-                  style={{
-                    background: '#E8B4B8',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '8px 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  View My Applications
-                </button>
-                <button
-                  onClick={() => navigate('/student-dashboard/available-internships')}
-                  style={{
-                    background: '#67595E',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '8px 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  Browse Available Internships
-                </button>
-                <button
-                  onClick={() => navigate('/my-reports')}
-                  style={{
-                    background: '#E8B4B8',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '8px 16px',
-                    width: '100%',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  View My Reports
-                </button>
-              </div>
-            </div>
-
-            {/* Assessment Modal */}
-            {showAssessment && (
-              <div style={{ 
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000
-              }}>
-                <div style={{ 
-                  background: '#fff',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  width: '60%',
-                  maxHeight: '80vh',
-                  overflowY: 'auto',
-                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 style={{ margin: 0, color: '#67595E' }}>Online Assessment 1</h3>
-                    <button 
-                      onClick={() => {
-                        setShowAssessment(false);
-                        setAssessmentAnswer('');
-                      }}
-                      style={{ 
-                        background: 'none',
-                        border: 'none',
-                        fontSize: '20px',
-                        cursor: 'pointer',
-                        color: '#67595E'
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div style={{ marginBottom: '20px' }}>
-                    <pre style={{ 
-                      background: '#f5f5f5',
-                      padding: '15px',
-                      borderRadius: '8px',
-                      overflowX: 'auto',
-                      fontFamily: 'monospace'
-                    }}>
-                      {codingProblem.question}
-                    </pre>
-                  </div>
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Your Answer:</label>
-                    <input 
-                      type="text"
-                      value={assessmentAnswer}
-                      onChange={(e) => setAssessmentAnswer(e.target.value)}
-                      style={{ 
-                        width: '100%',
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: '1px solid #ccc'
-                      }}
-                      placeholder="Enter your answer..."
-                    />
-                  </div>
-                  <button 
-                    onClick={() => {
-                      if (assessmentAnswer === codingProblem.correctAnswer) {
-                        setShowScoreDialog(true);
-                        setShowAssessment(false);
-                      } else {
-                        alert('Incorrect answer. Try again!');
-                      }
-                    }}
-                    style={{ 
-                      padding: '8px 16px',
-                      background: '#E8B4B8',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Submit Answer
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Removed as per instructions */}
 
             {/* Score Dialog */}
             {showScoreDialog && (
@@ -843,7 +686,25 @@ const StudentDashboard = () => {
             <div className="dashboard-section" style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <h3 style={{ margin: 0 }}>Logbook</h3>
-                <button className="btn btn-primary" style={{ fontSize: 15 }}>Fill Today's Logbook</button>
+                <button
+                  className="btn btn-primary"
+                  style={{ fontSize: 15 }}
+                  onClick={() => {
+                    setLogbook(prev => {
+                      if (prev.daysCompleted < 90) {
+                        return {
+                          ...prev,
+                          daysCompleted: prev.daysCompleted + 1,
+                          lastLogDate: new Date().toISOString().split('T')[0],
+                        };
+                      }
+                      return prev;
+                    });
+                  }}
+                  disabled={logbook.daysCompleted >= 90}
+                >
+                  Fill Today's Logbook
+                </button>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 8 }}>
                 <span>Days completed: <b>{logbook.daysCompleted}</b> / {logbook.daysRequired}</span>
@@ -864,25 +725,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Final Report Section */}
-            <div className="dashboard-section" style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <h3 style={{ margin: 0 }}>Final Report</h3>
-                <button className="btn btn-primary" style={{ fontSize: 15 }}>Upload Final Report</button>
-              </div>
-              <div>Status: <b>{finalReportState.status}</b></div>
-              {finalReportState.downloadUrl && (
-                <div><a href={finalReportState.downloadUrl} style={{ color: '#A49393', textDecoration: 'underline', fontSize: 15 }}>Download Uploaded Report</a></div>
-              )}
-              {finalReportState.feedback && (
-                <div>Feedback: <span style={{ color: '#4CAF50' }}>{finalReportState.feedback}</span></div>
-              )}
-              {finalReportState.grade && (
-                <div>Grade: <span style={{ color: '#FFD700', fontWeight: 600 }}>{finalReportState.grade}</span></div>
-              )}
-              {finalReportState.assessmentScore && (
-                <div>Online Assessment Score: <span style={{ color: '#4CAF50', fontWeight: 600 }}>{finalReportState.assessmentScore}</span></div>
-              )}
-            </div>
+            {/* Removed as per instructions */}
 
             {/* To-Do List / Reminders */}
             <div className="dashboard-section" style={{ marginBottom: 24 }}>
