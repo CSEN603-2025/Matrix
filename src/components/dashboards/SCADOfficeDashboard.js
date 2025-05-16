@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CompanyRegistrationView from '../CompanyRegistrationView';
 
 // Mock data
 const summary = {
@@ -7,6 +8,7 @@ const summary = {
   pendingApplications: 18,
   submittedReports: 50,
   activeCompanies: 22,
+  pendingCompanies: 5,
   ongoingInternships: 28,
 };
 
@@ -16,8 +18,39 @@ const students = [
 ];
 
 const companies = [
-  { id: 1, name: 'Tech Innovators', status: 'Active', internships: 2 },
-  { id: 2, name: 'Green Energy', status: 'Pending', internships: 1 },
+  { 
+    id: 1, 
+    name: 'Tech Innovators', 
+    status: 'Active', 
+    internships: 2,
+    companyName: 'Tech Innovators',
+    industry: 'Technology',
+    companySize: '201-500 employees',
+    companyEmail: 'hr@techinnovators.com',
+    registrationDate: '2024-05-01'
+  },
+  { 
+    id: 2, 
+    name: 'Green Energy', 
+    status: 'Pending', 
+    internships: 0,
+    companyName: 'Green Energy',
+    industry: 'Energy',
+    companySize: '51-200 employees',
+    companyEmail: 'contact@greenenergy.com',
+    registrationDate: '2024-05-08'
+  },
+  { 
+    id: 3, 
+    name: 'Digital Solutions', 
+    status: 'Pending', 
+    internships: 0,
+    companyName: 'Digital Solutions',
+    industry: 'Technology',
+    companySize: '51-200 employees',
+    companyEmail: 'info@digitalsolutions.com',
+    registrationDate: '2024-05-09'
+  },
 ];
 
 const applications = [
@@ -141,6 +174,8 @@ const SCADOfficeDashboard = () => {
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [showCallerLeft, setShowCallerLeft] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [showCompanyDetails, setShowCompanyDetails] = useState(false);
 
   // Filtered lists (mock logic)
   const filteredStudents = students.filter(s =>
@@ -196,6 +231,35 @@ const SCADOfficeDashboard = () => {
 
   const handleEndCall = () => {
     setShowVideoCall(false);
+  };
+
+  const handleViewCompany = (company) => {
+    setSelectedCompany(company);
+    setShowCompanyDetails(true);
+  };
+
+  const handleApproveCompany = (company) => {
+    // Here you would typically make an API call to approve the company
+    console.log('Approving company:', company);
+    const updatedCompanies = companies.map(c => 
+      c.id === company.id ? { ...c, status: 'Active' } : c
+    );
+    // Update companies list
+    companies.splice(0, companies.length, ...updatedCompanies);
+    setShowCompanyDetails(false);
+    setSelectedCompany(null);
+  };
+
+  const handleRejectCompany = (company) => {
+    // Here you would typically make an API call to reject the company
+    console.log('Rejecting company:', company);
+    const updatedCompanies = companies.map(c => 
+      c.id === company.id ? { ...c, status: 'Rejected' } : c
+    );
+    // Update companies list
+    companies.splice(0, companies.length, ...updatedCompanies);
+    setShowCompanyDetails(false);
+    setSelectedCompany(null);
   };
 
   // Add before the return statement
@@ -537,6 +601,56 @@ const SCADOfficeDashboard = () => {
         </div>
       )}
 
+      {/* Company Registration Details Modal */}
+      {showCompanyDetails && selectedCompany && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '12px',
+            width: '90%',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            <button 
+              onClick={() => {
+                setShowCompanyDetails(false);
+                setSelectedCompany(null);
+              }}
+              style={{
+                position: 'absolute',
+                right: '1rem',
+                top: '1rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#67595E'
+              }}
+            >
+              ×
+            </button>
+            <CompanyRegistrationView 
+              company={selectedCompany}
+              onApprove={handleApproveCompany}
+              onReject={handleRejectCompany}
+            />
+          </div>
+        </div>
+      )}
+
       {/* 1. Dashboard Overview / Summary Cards */}
       <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
         <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee' }}>
@@ -558,6 +672,10 @@ const SCADOfficeDashboard = () => {
         <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee' }}>
           <div style={{ fontSize: 18, fontWeight: 600 }}>Active Companies</div>
           <div style={{ fontSize: 32, color: '#4CAF50', fontWeight: 700 }}>{summary.activeCompanies}</div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee' }}>
+          <div style={{ fontSize: 18, fontWeight: 600 }}>Pending Companies</div>
+          <div style={{ fontSize: 32, color: '#FFD700', fontWeight: 700 }}>{summary.pendingCompanies}</div>
         </div>
         <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee', position: 'relative' }}>
           <div style={{ fontSize: 18, fontWeight: 600 }}>Ongoing Internships</div>
@@ -852,30 +970,78 @@ const SCADOfficeDashboard = () => {
       {/* 3. Company Management */}
       <div className="dashboard-section" style={{ marginBottom: 32 }}>
         <h3>Company Management</h3>
-        <select value={companyFilter} onChange={e => setCompanyFilter(e.target.value)} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc', marginBottom: 8 }}>
+        <select 
+          value={companyFilter} 
+          onChange={e => setCompanyFilter(e.target.value)} 
+          style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc', marginBottom: 8 }}
+        >
           <option value="">All Statuses</option>
           <option value="Active">Active</option>
           <option value="Pending">Pending</option>
+          <option value="Rejected">Rejected</option>
         </select>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
           <thead style={{ background: '#E8B4B8' }}>
             <tr>
               <th style={{ padding: 12, textAlign: 'left' }}>Name</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Industry</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Size</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Registration Date</th>
               <th style={{ padding: 12, textAlign: 'left' }}>Status</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Internships</th>
               <th style={{ padding: 12, textAlign: 'left' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCompanies.map((c, idx) => (
+            {filteredCompanies.map((c) => (
               <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
                 <td style={{ padding: 12 }}>{c.name}</td>
-                <td style={{ padding: 12 }}><span style={{ background: statusColors[c.status] || '#ccc', color: '#fff', borderRadius: 8, padding: '2px 10px' }}>{c.status}</span></td>
-                <td style={{ padding: 12 }}>{c.internships}</td>
+                <td style={{ padding: 12 }}>{c.industry}</td>
+                <td style={{ padding: 12 }}>{c.companySize}</td>
+                <td style={{ padding: 12 }}>{c.registrationDate}</td>
                 <td style={{ padding: 12 }}>
-                  <button className="btn btn-secondary" style={{ marginRight: 8 }}>View</button>
-                  <button className="btn btn-secondary" style={{ marginRight: 8 }}>Approve</button>
-                  <button className="btn btn-secondary" style={{ color: '#F44336', borderColor: '#F44336' }}>Deactivate</button>
+                  <span style={{ 
+                    background: statusColors[c.status] || '#ccc', 
+                    color: '#fff', 
+                    borderRadius: 8, 
+                    padding: '2px 10px' 
+                  }}>
+                    {c.status}
+                  </span>
+                </td>
+                <td style={{ padding: 12 }}>
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ marginRight: 8 }}
+                    onClick={() => handleViewCompany(c)}
+                  >
+                    View Details
+                  </button>
+                  {c.status === 'Pending' && (
+                    <>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ marginRight: 8 }}
+                        onClick={() => handleApproveCompany(c)}
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ color: '#F44336', borderColor: '#F44336' }}
+                        onClick={() => handleRejectCompany(c)}
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {c.status === 'Active' && (
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{ color: '#F44336', borderColor: '#F44336' }}
+                    >
+                      Deactivate
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
