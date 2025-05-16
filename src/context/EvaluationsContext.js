@@ -57,6 +57,8 @@ export const EvaluationsProvider = ({ children }) => {
       companyName: internship.companyName,
       position: internship.position,
       period: `${internship.startDate} - ${internship.endDate}`,
+      status: internship.status || 'Completed',
+      completionDate: new Date().toISOString().split('T')[0],
       evaluation
     };
     setEvaluations(prev => [...prev, newEvaluation]);
@@ -66,20 +68,34 @@ export const EvaluationsProvider = ({ children }) => {
     setEvaluations(prev =>
       prev.map(evaluation =>
         evaluation.id === id
-          ? { ...evaluation, evaluation: updatedEvaluation }
+          ? { 
+              ...evaluation, 
+              ...updatedEvaluation,
+              completionDate: new Date().toISOString().split('T')[0]
+            }
           : evaluation
       )
     );
   };
 
   const deleteEvaluation = (id) => {
-    setEvaluations(prev => prev.filter(evaluation => evaluation.id !== id));
+    if (window.confirm('Are you sure you want to delete this evaluation? This action cannot be undone.')) {
+      setEvaluations(prev => prev.filter(evaluation => evaluation.id !== id));
+    }
   };
 
   const getEvaluationByInternship = (companyName, position) => {
     return evaluations.find(
       evaluation => evaluation.companyName === companyName && evaluation.position === position
     );
+  };
+
+  const getCurrentInternEvaluations = () => {
+    return evaluations.filter(evaluation => evaluation.status === 'Current');
+  };
+
+  const getPendingEvaluations = () => {
+    return evaluations.filter(evaluation => !evaluation.evaluation);
   };
 
   return (
@@ -89,7 +105,9 @@ export const EvaluationsProvider = ({ children }) => {
         addEvaluation,
         updateEvaluation,
         deleteEvaluation,
-        getEvaluationByInternship
+        getEvaluationByInternship,
+        getCurrentInternEvaluations,
+        getPendingEvaluations
       }}
     >
       {children}
