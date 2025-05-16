@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MenuIcon from '@mui/icons-material/Menu';
+import IconButton from '@mui/material/IconButton';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
 
   const isActive = (path) => location.pathname === path;
@@ -62,7 +64,8 @@ const Sidebar = () => {
           { label: 'Dashboard', path: '/scad-dashboard', icon: '📊' },
           { label: 'SCAD Internships', path: '/scad-dashboard/available-internships', icon: '🎯' },
           { label: 'Companies', path: '/scad-dashboard/companies', icon: '🏢' },
-          { label: 'Student Reports', path: '/scad-dashboard/student-reports', icon: '📝' },
+          { label: 'Student Status', path: '/scad-dashboard/student-status', icon: '👥' },
+          { label: 'Reports', path: '/scad-dashboard/student-reports', icon: '📝' },
           { label: 'Workshops', path: '/scad-dashboard/workshops', icon: '📚' },
           { label: 'Messages', path: '/scad-dashboard/messages', icon: '💬' },
         ];
@@ -71,7 +74,7 @@ const Sidebar = () => {
     }
   };
 
-  // Hamburger menu button
+  // Modern Hamburger menu button
   const HamburgerButton = () => (
     <button
       onClick={() => setIsOpen(!isOpen)}
@@ -80,38 +83,28 @@ const Sidebar = () => {
         left: isOpen ? '220px' : '20px',
         top: '20px',
         zIndex: 1000,
-        background: '#E8B4B8',
+        background: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)',
         border: 'none',
-        borderRadius: '5px',
-        padding: '10px',
-        cursor: 'pointer',
-        transition: 'left 0.3s ease',
+        padding: 10,
+        outline: 'none',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'left 0.3s ease, box-shadow 0.2s',
+        boxSizing: 'border-box',
+        width: 48,
+        height: 48,
       }}
+      aria-label="Open sidebar menu"
     >
-      <span style={{
-        display: 'block',
-        width: '20px',
-        height: '2px',
-        background: '#fff',
-        transition: 'all 0.3s ease',
-      }}></span>
-      <span style={{
-        display: 'block',
-        width: '20px',
-        height: '2px',
-        background: '#fff',
-        transition: 'all 0.3s ease',
-      }}></span>
-      <span style={{
-        display: 'block',
-        width: '20px',
-        height: '2px',
-        background: '#fff',
-        transition: 'all 0.3s ease',
-      }}></span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <div style={{ width: 28, height: 4, borderRadius: 2, background: '#E8B4B8', transition: 'all 0.3s' }} />
+        <div style={{ width: 20, height: 4, borderRadius: 2, background: '#E8B4B8', transition: 'all 0.3s' }} />
+        <div style={{ width: 24, height: 4, borderRadius: 2, background: '#E8B4B8', transition: 'all 0.3s' }} />
+      </div>
     </button>
   );
 
@@ -128,7 +121,10 @@ const Sidebar = () => {
         paddingTop: '80px',
         boxShadow: '2px 0 4px rgba(0, 0, 0, 0.1)',
         zIndex: 900,
-        transition: 'left 0.3s ease'
+        transition: 'left 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
       }}>
         <nav style={{ padding: '1rem' }}>
           {getNavigationItems().map((item, index) => (
@@ -156,6 +152,30 @@ const Sidebar = () => {
             </button>
           ))}
         </nav>
+        {/* Logout Button at the bottom */}
+        <div style={{ padding: '1rem', borderTop: '1px solid #eee' }}>
+          <button
+            onClick={() => { logout(); navigate('/'); }}
+            style={{
+              width: '100%',
+              padding: '0.8rem 1rem',
+              background: '#E8B4B8',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.8rem',
+              marginTop: '1rem',
+              boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)'
+            }}
+          >
+            <span role="img" aria-label="logout">🚪</span> Logout
+          </button>
+        </div>
       </div>
     </>
   );

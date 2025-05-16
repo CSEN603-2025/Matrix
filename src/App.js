@@ -30,6 +30,8 @@ import AvailableInternships from './components/internships/AvailableInternships'
 import InternshipReportsList from './components/reports/InternshipReportsList';
 import SubmitReport from './components/reports/SubmitReport';
 import StudentReportsList from './components/reports/StudentReportsList';
+import SCADInternships from './components/internships/SCADInternships';
+import SCADStudentStatus from './components/dashboards/SCADStudentStatus';
 import './App.css';
 
 const AppContent = () => {
@@ -271,10 +273,26 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/scad-dashboard/internships"
+            element={
+              <ProtectedRoute allowedRoles={['scad_office']}>
+                <SCADInternships />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/submit-report"
             element={
               <ProtectedRoute allowedRoles={['student', 'pro_student']}>
                 <SubmitReport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scad-dashboard/student-status"
+            element={
+              <ProtectedRoute allowedRoles={['scad_office']}>
+                <SCADStudentStatus />
               </ProtectedRoute>
             }
           />

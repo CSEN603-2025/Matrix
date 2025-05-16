@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { FormControl, InputLabel, Select, MenuItem, RadioGroup, FormControlLabel, Radio, Tooltip, IconButton } from '@mui/material';
+import BusinessIcon from '@mui/icons-material/Business';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import SchoolIcon from '@mui/icons-material/School';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const Hero = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [selectedRole, setSelectedRole] = useState('student');
   const [credentials, setCredentials] = useState({
     email: '',
     password: '',
@@ -59,6 +66,10 @@ const Hero = () => {
     '501-1000 employees',
     '1000+ employees'
   ];
+
+  React.useEffect(() => {
+    setCredentials((prev) => ({ ...prev, role: selectedRole }));
+  }, [selectedRole]);
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -247,28 +258,57 @@ const Hero = () => {
                     required
                     className="mb-4"
                   />
-                  <select
-                    value={credentials.industry}
-                    onChange={(e) => setCredentials({ ...credentials, industry: e.target.value })}
-                    required
-                    className="mb-4"
-                  >
-                    <option value="">Select Industry</option>
-                    {industries.map(industry => (
-                      <option key={industry} value={industry}>{industry}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={credentials.companySize}
-                    onChange={(e) => setCredentials({ ...credentials, companySize: e.target.value })}
-                    required
-                    className="mb-4"
-                  >
-                    <option value="">Select Company Size</option>
-                    {companySizes.map(size => (
-                      <option key={size} value={size}>{size}</option>
-                    ))}
-                  </select>
+                  <FormControl fullWidth className="mb-4">
+                    <InputLabel id="industry-label"><BusinessIcon fontSize="small" style={{verticalAlign:'middle',marginRight:4}}/>Industry</InputLabel>
+                    <Select
+                      labelId="industry-label"
+                      value={credentials.industry}
+                      label="Industry"
+                      onChange={(e) => setCredentials({ ...credentials, industry: e.target.value })}
+                      required
+                    >
+                      <MenuItem value=""><em>Select Industry</em></MenuItem>
+                      {industries.map(industry => (
+                        <MenuItem key={industry} value={industry}>{industry}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  {/* Enhanced Company Size Selection with Info Tooltip */}
+                  <FormControl fullWidth className="mb-4">
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+                      <InputLabel shrink style={{ position: 'static', transform: 'none', fontWeight: 500 }}>
+                        <ApartmentIcon fontSize="small" style={{verticalAlign:'middle',marginRight:4}}/>
+                        Company Size
+                      </InputLabel>
+                      <Tooltip
+                        title={
+                          <div style={{ fontSize: 14 }}>
+                            <div><b>Small:</b> 50 employees or less</div>
+                            <div><b>Medium:</b> more than 50, less than or equal to 100 employees</div>
+                            <div><b>Large:</b> more than 100, less than or equal to 500 employees</div>
+                            <div><b>Corporate:</b> more than 500 employees</div>
+                          </div>
+                        }
+                        placement="right"
+                        arrow
+                      >
+                        <IconButton size="small" style={{ marginLeft: 4 }}>
+                          <InfoOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                    <RadioGroup
+                      row
+                      value={credentials.companySize}
+                      onChange={e => setCredentials({ ...credentials, companySize: e.target.value })}
+                      name="company-size-group"
+                    >
+                      <FormControlLabel value="Small" control={<Radio />} label="Small" />
+                      <FormControlLabel value="Medium" control={<Radio />} label="Medium" />
+                      <FormControlLabel value="Large" control={<Radio />} label="Large" />
+                      <FormControlLabel value="Corporate" control={<Radio />} label="Corporate" />
+                    </RadioGroup>
+                  </FormControl>
                   <input
                     type="email"
                     placeholder="Official Company Email"
@@ -410,42 +450,37 @@ const Hero = () => {
             required
             className="mb-4"
           />
-          <select
-            value={credentials.role}
-            onChange={(e) => setCredentials({ ...credentials, role: e.target.value })}
-            className="role-select mb-4"
-            required
-          >
-            <option value="">Select your role</option>
-            <option value="student">Student</option>
-            <option value="pro_student">Pro Student</option>
-            <option value="company">Company</option>
-            <option value="scad_office">SCAD Office</option>
-            <option value="faculty">Faculty Member</option>
-          </select>
           {!isLogin && (credentials.role === 'student' || credentials.role === 'pro_student') && (
-            <div className="form-group">
-              <select
-                value={credentials.major}
-                onChange={(e) => setCredentials({ ...credentials, major: e.target.value })}
-                required
-                className="mb-4"
-              >
-                {majors.map(major => (
-                  <option key={major} value={major}>{major}</option>
-                ))}
-              </select>
-              <select
-                value={credentials.semester}
-                onChange={(e) => setCredentials({ ...credentials, semester: e.target.value })}
-                required
-                className="mb-4"
-              >
-                <option value="">Select semester</option>
-                {semesters.map(semester => (
-                  <option key={semester} value={semester}>Semester {semester}</option>
-                ))}
-              </select>
+            <div className="form-group" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <FormControl fullWidth className="mb-4">
+                <InputLabel id="major-label"><SchoolIcon fontSize="small" style={{verticalAlign:'middle',marginRight:4}}/>Major</InputLabel>
+                <Select
+                  labelId="major-label"
+                  value={credentials.major}
+                  label="Major"
+                  onChange={(e) => setCredentials({ ...credentials, major: e.target.value })}
+                  required
+                >
+                  {majors.map(major => (
+                    <MenuItem key={major} value={major}>{major}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth className="mb-4">
+                <InputLabel id="semester-label"><CalendarMonthIcon fontSize="small" style={{verticalAlign:'middle',marginRight:4}}/>Semester</InputLabel>
+                <Select
+                  labelId="semester-label"
+                  value={credentials.semester}
+                  label="Semester"
+                  onChange={(e) => setCredentials({ ...credentials, semester: e.target.value })}
+                  required
+                >
+                  <MenuItem value=""><em>Select semester</em></MenuItem>
+                  {semesters.map(semester => (
+                    <MenuItem key={semester} value={semester}>Semester {semester}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
           )}
           <div className="auth-buttons flex flex-col gap-4">
@@ -458,29 +493,62 @@ const Hero = () => {
           </div>
         </form>
 
-        <div className="hero-roles mt-6">
-          <div className="hero-role">
+        {/* Always show the role selection at the bottom, after the form */}
+        <div className="hero-roles mt-6" style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+          {/* Student */}
+          <div
+            className={`hero-role${selectedRole === 'student' ? ' selected-role' : ''}`}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedRole('student')}
+          >
             <i className="fas fa-user-graduate role-icon"></i>
             <div>
               <strong>Students</strong>
               <div className="role-desc">Apply, build your profile, and submit internship reports.</div>
             </div>
           </div>
-          <div className="hero-role">
+          {/* Pro Student */}
+          <div
+            className={`hero-role${selectedRole === 'pro_student' ? ' selected-role' : ''}`}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedRole('pro_student')}
+          >
+            <i className="fas fa-user-tie role-icon"></i>
+            <div>
+              <strong>Pro Student</strong>
+              <div className="role-desc">Access advanced opportunities and resources.</div>
+            </div>
+          </div>
+          {/* Company */}
+          <div
+            className={`hero-role${selectedRole === 'company' ? ' selected-role' : ''}`}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedRole('company')}
+          >
             <i className="fas fa-building role-icon"></i>
             <div>
               <strong>Companies</strong>
               <div className="role-desc">Post internships and evaluate student performance.</div>
             </div>
           </div>
-          <div className="hero-role">
+          {/* SCAD Office */}
+          <div
+            className={`hero-role${selectedRole === 'scad_office' ? ' selected-role' : ''}`}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedRole('scad_office')}
+          >
             <i className="fas fa-university role-icon"></i>
             <div>
               <strong>SCAD Office</strong>
               <div className="role-desc">Manage internships, approve companies, and view reports.</div>
             </div>
           </div>
-          <div className="hero-role">
+          {/* Faculty */}
+          <div
+            className={`hero-role${selectedRole === 'faculty' ? ' selected-role' : ''}`}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedRole('faculty')}
+          >
             <i className="fas fa-chalkboard-teacher role-icon"></i>
             <div>
               <strong>Faculty</strong>
@@ -488,6 +556,16 @@ const Hero = () => {
             </div>
           </div>
         </div>
+
+        <style>{`
+          .selected-role {
+            border: 2px solid #e48e9c;
+            background: #fbeaec;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(228, 142, 156, 0.08);
+            transition: border 0.2s, background 0.2s;
+          }
+        `}</style>
       </div>
     </section>
   );

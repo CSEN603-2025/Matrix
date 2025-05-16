@@ -3,6 +3,7 @@ import CompanyRegistrationView from './CompanyRegistrationView';
 import { sendCompanyStatusEmail } from '../services/emailService';
 import { sendStatusNotification } from '../services/notificationService';
 import { toast } from 'react-toastify';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const CompaniesView = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -12,6 +13,7 @@ const CompaniesView = () => {
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [filterIndustry, setFilterIndustry] = useState('');
   const [companies, setCompanies] = useState([
     { 
       id: 1, 
@@ -78,6 +80,9 @@ const CompaniesView = () => {
     Rejected: '#F44336',
     Active: '#4CAF50',
   };
+
+  // Get unique industries for dropdown
+  const industries = Array.from(new Set(companies.map(c => c.industry)));
 
   const handleViewCompany = (company) => {
     setSelectedCompany(company);
@@ -162,10 +167,10 @@ const CompaniesView = () => {
 
   const filteredCompanies = companies.filter(company => {
     const matchesStatus = !filterStatus || company.status === filterStatus;
+    const matchesIndustry = !filterIndustry || company.industry === filterIndustry;
     const matchesSearch = !searchTerm || 
-      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.industry.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
+      company.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesIndustry && matchesSearch;
   });
 
   return (
@@ -173,24 +178,49 @@ const CompaniesView = () => {
       <h2>Companies</h2>
       
       {/* Search and Filter Bar */}
-      <div className="search-filter-bar">
+      <div className="search-filter-bar" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center' }}>
         <input
           type="text"
           placeholder="Search companies..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
+          style={{ flex: 1, minWidth: 200, height: 40, borderRadius: 6, border: '1px solid #ddd', padding: '0 14px', fontSize: '1rem' }}
         />
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="status-filter"
-        >
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Pending">Pending</option>
-          <option value="Rejected">Rejected</option>
-        </select>
+        {/* Enhanced Status Filter */}
+        <FormControl variant="outlined" size="small" style={{ minWidth: 150, height: 40 }}>
+          <InputLabel id="status-label">Status</InputLabel>
+          <Select
+            labelId="status-label"
+            value={filterStatus}
+            label="Status"
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="status-filter"
+            style={{ height: 40, display: 'flex', alignItems: 'center' }}
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Pending">Pending</MenuItem>
+            <MenuItem value="Rejected">Rejected</MenuItem>
+          </Select>
+        </FormControl>
+        {/* Enhanced Industry Filter */}
+        <FormControl variant="outlined" size="small" style={{ minWidth: 180, height: 40 }}>
+          <InputLabel id="industry-label">Industry</InputLabel>
+          <Select
+            labelId="industry-label"
+            value={filterIndustry}
+            label="Industry"
+            onChange={(e) => setFilterIndustry(e.target.value)}
+            className="industry-filter"
+            style={{ height: 40, display: 'flex', alignItems: 'center' }}
+          >
+            <MenuItem value="">All Industries</MenuItem>
+            {industries.map(ind => (
+              <MenuItem key={ind} value={ind}>{ind}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </div>
 
       {/* Companies Table */}

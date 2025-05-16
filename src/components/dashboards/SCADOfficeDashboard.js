@@ -2,6 +2,20 @@ import React, { useState } from 'react';
 import CompanyRegistrationView from '../CompanyRegistrationView';
 import { addCompanyStatusNotification } from '../../services/notificationService';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import jsPDF from 'jspdf';
+
+// Utility function for date formatting
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
 
 // Mock data
 const summary = {
@@ -157,6 +171,43 @@ const universityReportData = {
   }
 };
 
+// Mock internships for preview (reuse from SCADInternships)
+const mockInternships = [
+  {
+    id: 1,
+    company: 'Tech Innovators',
+    jobTitle: 'Frontend Developer',
+    duration: '3 months',
+    paid: true,
+    salary: '5000 EGP',
+    industry: 'Technology',
+    skills: 'React, JavaScript, CSS',
+    description: 'Work on a modern React web app.'
+  },
+  {
+    id: 2,
+    company: 'Green Energy',
+    jobTitle: 'Data Analyst',
+    duration: '2 months',
+    paid: false,
+    salary: '',
+    industry: 'Energy',
+    skills: 'Python, Data Visualization',
+    description: 'Analyze renewable energy data.'
+  },
+  {
+    id: 3,
+    company: 'Digital Solutions',
+    jobTitle: 'Backend Developer',
+    duration: '4 months',
+    paid: true,
+    salary: '6000 EGP',
+    industry: 'Technology',
+    skills: 'Node.js, Express',
+    description: 'Develop RESTful APIs.'
+  }
+];
+
 const SCADOfficeDashboard = () => {
   const [studentFilter, setStudentFilter] = useState({ id: '', major: '', status: '' });
   const [companyFilter, setCompanyFilter] = useState('');
@@ -213,6 +264,13 @@ const SCADOfficeDashboard = () => {
       registrationDate: '2024-05-09'
     }
   ]);
+
+  // Add state for internship cycle dates
+  const [cycleStartDate, setCycleStartDate] = useState('');
+  const [cycleEndDate, setCycleEndDate] = useState('');
+  const [cycleSaved, setCycleSaved] = useState(false);
+
+  const navigate = useNavigate();
 
   // Filtered lists (mock logic)
   const filteredStudents = students.filter(s =>
@@ -311,6 +369,11 @@ const SCADOfficeDashboard = () => {
     setShowCompanyDetails(false);
     setSelectedCompany(null);
     toast.info('Company rejected');
+  };
+
+  const handleSaveCycle = () => {
+    setCycleSaved(true);
+    setTimeout(() => setCycleSaved(false), 2000);
   };
 
   // Add before the return statement
@@ -958,17 +1021,35 @@ const SCADOfficeDashboard = () => {
       <div className="dashboard-section" style={{ marginBottom: 32 }}>
         <h3>Student Management</h3>
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <input type="text" placeholder="Filter by ID" value={studentFilter.id} onChange={e => setStudentFilter({ ...studentFilter, id: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }} />
-          <select value={studentFilter.major} onChange={e => setStudentFilter({ ...studentFilter, major: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
-            <option value="">All Majors</option>
-            <option value="CS">CS</option>
-            <option value="DS">DS</option>
-          </select>
-          <select value={studentFilter.status} onChange={e => setStudentFilter({ ...studentFilter, status: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
-            <option value="">All Statuses</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-          </select>
+          <input type="text" placeholder="Filter by ID" value={studentFilter.id} onChange={e => setStudentFilter({ ...studentFilter, id: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc', height: 40 }} />
+          <FormControl variant="outlined" size="small" style={{ minWidth: 120, height: 40 }}>
+            <InputLabel id="major-label">Major</InputLabel>
+            <Select
+              labelId="major-label"
+              value={studentFilter.major}
+              label="Major"
+              onChange={e => setStudentFilter({ ...studentFilter, major: e.target.value })}
+              style={{ height: 40 }}
+            >
+              <MenuItem value="">All Majors</MenuItem>
+              <MenuItem value="CS">CS</MenuItem>
+              <MenuItem value="DS">DS</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl variant="outlined" size="small" style={{ minWidth: 120, height: 40 }}>
+            <InputLabel id="status-label">Status</InputLabel>
+            <Select
+              labelId="status-label"
+              value={studentFilter.status}
+              label="Status"
+              onChange={e => setStudentFilter({ ...studentFilter, status: e.target.value })}
+              style={{ height: 40 }}
+            >
+              <MenuItem value="">All Statuses</MenuItem>
+              <MenuItem value="In Progress">In Progress</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+            </Select>
+          </FormControl>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
           <thead style={{ background: '#E8B4B8' }}>
@@ -1020,17 +1101,40 @@ const SCADOfficeDashboard = () => {
 
       {/* 3. Company Management */}
       <div className="dashboard-section" style={{ marginBottom: 32 }}>
-        <h3>Company Management</h3>
-        <select 
-          value={companyFilter} 
-          onChange={e => setCompanyFilter(e.target.value)} 
-          style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc', marginBottom: 8 }}
-        >
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Pending">Pending</option>
-          <option value="Rejected">Rejected</option>
-        </select>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>Company Management</h3>
+          <button
+            onClick={() => navigate('/scad-dashboard/companies')}
+            style={{
+              background: '#E8B4B8',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 20px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)'
+            }}
+          >
+            See More
+          </button>
+        </div>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 150, height: 40, marginBottom: 8 }}>
+          <InputLabel id="company-status-label">Status</InputLabel>
+          <Select
+            labelId="company-status-label"
+            value={companyFilter}
+            label="Status"
+            onChange={e => setCompanyFilter(e.target.value)}
+            style={{ height: 40 }}
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Pending">Pending</MenuItem>
+            <MenuItem value="Rejected">Rejected</MenuItem>
+          </Select>
+        </FormControl>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
           <thead style={{ background: '#E8B4B8' }}>
             <tr>
@@ -1100,49 +1204,45 @@ const SCADOfficeDashboard = () => {
         </table>
       </div>
 
-      {/* 4. Internship Applications */}
+      {/* 4. Internship Applications (Preview) */}
       <div className="dashboard-section" style={{ marginBottom: 32 }}>
-        <h3>Internship Applications</h3>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <select value={appFilter.company} onChange={e => setAppFilter({ ...appFilter, company: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
-            <option value="">All Companies</option>
-            {companiesList.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
-          <select value={appFilter.student} onChange={e => setAppFilter({ ...appFilter, student: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
-            <option value="">All Students</option>
-            {students.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-          </select>
-          <select value={appFilter.status} onChange={e => setAppFilter({ ...appFilter, status: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
-            <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>Internship Applications</h3>
+          <button
+            onClick={() => navigate('/scad-dashboard/available-internships')}
+            style={{
+              background: '#E8B4B8',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 20px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)'
+            }}
+          >
+            See More
+          </button>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', marginTop: 8 }}>
           <thead style={{ background: '#E8B4B8' }}>
             <tr>
-              <th style={{ padding: 12, textAlign: 'left' }}>Student</th>
               <th style={{ padding: 12, textAlign: 'left' }}>Company</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Status</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Date</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Docs</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Actions</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Job Title</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Duration</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Paid</th>
+              <th style={{ padding: 12, textAlign: 'left' }}>Industry</th>
             </tr>
           </thead>
           <tbody>
-            {filteredApps.map((a, idx) => (
-              <tr key={a.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: 12 }}>{a.student}</td>
-                <td style={{ padding: 12 }}>{a.company}</td>
-                <td style={{ padding: 12 }}><span style={{ background: statusColors[a.status] || '#ccc', color: '#fff', borderRadius: 8, padding: '2px 10px' }}>{a.status}</span></td>
-                <td style={{ padding: 12 }}>{a.date}</td>
-                <td style={{ padding: 12 }}>{a.docs ? <a href="#">View</a> : '-'}</td>
-                <td style={{ padding: 12 }}>
-                  <button className="btn btn-primary" style={{ marginRight: 8 }}>Approve</button>
-                  <button className="btn btn-secondary" style={{ marginRight: 8, color: '#F44336', borderColor: '#F44336' }}>Reject</button>
-                  <button className="btn btn-secondary">Request Resubmission</button>
-                </td>
+            {mockInternships.slice(0, 3).map((i) => (
+              <tr key={i.id} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: 12 }}>{i.company}</td>
+                <td style={{ padding: 12 }}>{i.jobTitle}</td>
+                <td style={{ padding: 12 }}>{i.duration}</td>
+                <td style={{ padding: 12 }}>{i.paid ? 'Yes' : 'No'}</td>
+                <td style={{ padding: 12 }}>{i.industry}</td>
               </tr>
             ))}
           </tbody>
@@ -1226,6 +1326,41 @@ const SCADOfficeDashboard = () => {
       {/* 8. Deadlines & Scheduling */}
       <div className="dashboard-section" style={{ marginBottom: 32 }}>
         <h3>Deadlines & Scheduling</h3>
+        {/* Internship Cycle Date Range */}
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+          <div>
+            <label style={{ color: '#67595E', fontWeight: 500 }}>Cycle Start Date:</label><br />
+            <input
+              type="date"
+              value={cycleStartDate}
+              onChange={e => setCycleStartDate(e.target.value)}
+              style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', minWidth: 160 }}
+            />
+          </div>
+          <div>
+            <label style={{ color: '#67595E', fontWeight: 500 }}>Cycle End Date:</label><br />
+            <input
+              type="date"
+              value={cycleEndDate}
+              onChange={e => setCycleEndDate(e.target.value)}
+              style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', minWidth: 160 }}
+            />
+          </div>
+          <button
+            onClick={handleSaveCycle}
+            style={{ padding: '10px 20px', background: '#E8B4B8', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', marginTop: 22 }}
+            disabled={!cycleStartDate || !cycleEndDate}
+          >
+            Save
+          </button>
+          {cycleSaved && <span style={{ color: '#4CAF50', marginLeft: 12, fontWeight: 500 }}>Cycle dates saved!</span>}
+        </div>
+        {/* Display current cycle */}
+        {(cycleStartDate && cycleEndDate) && (
+          <div style={{ marginBottom: 16, color: '#67595E', fontWeight: 500 }}>
+            Current Internship Cycle: {cycleStartDate} to {cycleEndDate}
+          </div>
+        )}
         <button className="btn btn-primary" style={{ marginBottom: 8 }}>Set New Deadline</button>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {deadlines.map((d, idx) => (
