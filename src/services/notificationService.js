@@ -70,10 +70,28 @@ export const markAllNotificationsAsRead = (userId, userType) => {
   );
 };
 
+export const addCompanyStatusNotification = (companyId, status, message) => {
+  const notification = {
+    id: Date.now(),
+    type: 'status',
+    message: message || (status === 'approved' 
+      ? 'Your company registration has been approved! You can now post internship opportunities.'
+      : 'Your company registration requires additional information. Please contact SCAD office.'),
+    timestamp: new Date().toISOString(),
+    isRead: false,
+    status: status
+  };
+
+  // In a real app, this would be added to the database
+  notifications.unshift(notification);
+  return notification;
+};
+
 export default {
   sendStatusNotification,
   sendInternshipApplicationNotification,
   getNotifications,
   markNotificationAsRead,
-  markAllNotificationsAsRead
+  markAllNotificationsAsRead,
+  addCompanyStatusNotification
 }; 

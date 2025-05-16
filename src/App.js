@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { EvaluationsProvider } from './context/EvaluationsContext';
 import { ReportsProvider } from './context/ReportsContext';
 import { CoursesProvider } from './context/CoursesContext';
+import { CompanyDashboardProvider } from './contexts/CompanyDashboardContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -26,6 +27,9 @@ import CompaniesView from './components/CompaniesView';
 import Messages from './components/Messages';
 import TestCompanyRegistration from './components/TestCompanyRegistration';
 import AvailableInternships from './components/internships/AvailableInternships';
+import InternshipReportsList from './components/reports/InternshipReportsList';
+import SubmitReport from './components/reports/SubmitReport';
+import StudentReportsList from './components/reports/StudentReportsList';
 import './App.css';
 
 const AppContent = () => {
@@ -84,7 +88,9 @@ const AppContent = () => {
             path="/company-dashboard/*"
             element={
               <ProtectedRoute allowedRoles={['company']}>
-                <CompanyDashboard />
+                <CompanyDashboardProvider>
+                  <CompanyDashboard />
+                </CompanyDashboardProvider>
               </ProtectedRoute>
             }
           />
@@ -193,6 +199,14 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/my-reports"
+            element={
+              <ProtectedRoute allowedRoles={['student', 'pro_student']}>
+                <InternshipReportsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/company-evaluations"
             element={
               <ProtectedRoute allowedRoles={['student', 'pro_student']}>
@@ -205,6 +219,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute allowedRoles={['scad_office']}>
                 <CompaniesView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scad-dashboard/student-reports"
+            element={
+              <ProtectedRoute allowedRoles={['scad_office']}>
+                <StudentReportsList />
               </ProtectedRoute>
             }
           />
@@ -245,6 +267,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute allowedRoles={['scad_office']}>
                 <AvailableInternships />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/submit-report"
+            element={
+              <ProtectedRoute allowedRoles={['student', 'pro_student']}>
+                <SubmitReport />
               </ProtectedRoute>
             }
           />

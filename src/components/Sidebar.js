@@ -15,12 +15,12 @@ const Sidebar = () => {
       case 'student':
         return [
           { label: 'Dashboard', path: '/student-dashboard', icon: '📊' },
-          { label: 'Available Internships', path: '/student-dashboard/available-internships', icon: '🎯' },
+          { label: 'SCAD Internships', path: '/student-dashboard/available-internships', icon: '🎯' },
           { label: 'Applications', path: '/student-dashboard/applications', icon: '📝' },
           { label: 'My Internships', path: '/my-internships', icon: '💼' },
           { label: 'Company Evaluations', path: '/company-evaluations', icon: '⭐' },
           { label: 'Courses', path: '/student-dashboard/courses', icon: '📚' },
-          { label: 'Internship Reports', path: '/student-dashboard/report', icon: '📄' },
+          { label: 'Internship Reports', path: '/my-reports', icon: '📄' },
           { label: 'Suggested Companies', path: '/student-dashboard/suggested-companies', icon: '🏢' },
           { label: 'Workshops', path: '/student-dashboard/workshops', icon: '📅' },
           { label: 'Messages', path: '/student-dashboard/messages', icon: '💬' }
@@ -28,12 +28,12 @@ const Sidebar = () => {
       case 'pro_student':
         return [
           { label: 'Dashboard', path: '/pro-student-dashboard', icon: '📊' },
-          { label: 'Available Internships', path: '/pro-student-dashboard/available-internships', icon: '🎯' },
+          { label: 'SCAD Internships', path: '/pro-student-dashboard/available-internships', icon: '🎯' },
           { label: 'Applications', path: '/pro-student-dashboard/applications', icon: '📝' },
           { label: 'My Internships', path: '/my-internships', icon: '💼' },
           { label: 'Company Evaluations', path: '/company-evaluations', icon: '⭐' },
           { label: 'Courses', path: '/pro-student-dashboard/courses', icon: '📚' },
-          { label: 'Internship Reports', path: '/pro-student-dashboard/report', icon: '📄' },
+          { label: 'Internship Reports', path: '/my-reports', icon: '📄' },
           { label: 'Suggested Companies', path: '/pro-student-dashboard/suggested-companies', icon: '🏢' },
           { label: 'Workshops', path: '/pro-student-dashboard/workshops', icon: '📅' },
           { label: 'Messages', path: '/pro-student-dashboard/messages', icon: '💬' }
@@ -41,13 +41,10 @@ const Sidebar = () => {
       case 'company':
         return [
           { label: 'Dashboard', path: '/company-dashboard', icon: '📊' },
-          { label: 'Available Internships', path: '/company-dashboard/available-internships', icon: '🎯' },
-          { label: 'Internships', path: '/company-dashboard/internships', icon: '💼' },
+          { label: 'SCAD Internships', path: '/company-dashboard/available-internships', icon: '🎯' },
+          { label: 'Job Posts', path: '/company-dashboard/internships', icon: '💼' },
           { label: 'Applications', path: '/applications', icon: '📝' },
-          { label: 'Students', path: '/company-dashboard/students', icon: '👥' },
           { label: 'Evaluations', path: '/company-dashboard/evaluations', icon: '📋' },
-          { label: 'Reports', path: '/company-dashboard/reports', icon: '📈' },
-          { label: 'Workshops', path: '/company-dashboard/workshops', icon: '📅' },
           { label: 'Messages', path: '/company-dashboard/messages', icon: '💬' }
         ];
       case 'faculty':
@@ -63,13 +60,11 @@ const Sidebar = () => {
       case 'scad_office':
         return [
           { label: 'Dashboard', path: '/scad-dashboard', icon: '📊' },
-          { label: 'Available Internships', path: '/scad-dashboard/available-internships', icon: '🎯' },
-          { label: 'Students', path: '/scad-dashboard/students', icon: '👥' },
+          { label: 'SCAD Internships', path: '/scad-dashboard/available-internships', icon: '🎯' },
           { label: 'Companies', path: '/scad-dashboard/companies', icon: '🏢' },
-          { label: 'Applications', path: '/scad-dashboard/applications', icon: '📝' },
-          { label: 'Reports', path: '/scad-dashboard/reports', icon: '📈' },
-          { label: 'Workshops', path: '/scad-dashboard/workshops', icon: '📅' },
-          { label: 'Settings', path: '/scad-dashboard/settings', icon: '⚙️' }
+          { label: 'Student Reports', path: '/scad-dashboard/student-reports', icon: '📝' },
+          { label: 'Workshops', path: '/scad-dashboard/workshops', icon: '📚' },
+          { label: 'Messages', path: '/scad-dashboard/messages', icon: '💬' },
         ];
       default:
         return [];

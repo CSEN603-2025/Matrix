@@ -1,11 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import InternshipPostForm from './InternshipPostForm';
 import { toast } from 'react-toastify';
 
+// Mock data for company internships
+const mockInternships = [
+  {
+    id: 1,
+    title: 'Software Engineering Intern',
+    description: 'Join our software engineering team and work on cutting-edge projects.',
+    requirements: ['Java', 'Spring Boot', 'React'],
+    field: 'Software Development',
+    duration: '3 months',
+    location: 'Cairo',
+    deadline: '2024-06-15',
+    isPaid: true,
+    salary: '5000 EGP',
+    status: 'Active',
+    applicantsCount: 12
+  },
+  {
+    id: 2,
+    title: 'Data Science Intern',
+    description: 'Work on machine learning and data analysis projects.',
+    requirements: ['Python', 'Machine Learning', 'SQL'],
+    field: 'Data Science',
+    duration: '6 months',
+    location: 'Remote',
+    deadline: '2024-07-01',
+    isPaid: true,
+    salary: '6000 EGP',
+    status: 'Active',
+    applicantsCount: 8
+  },
+  {
+    id: 3,
+    title: 'UI/UX Design Intern',
+    description: 'Design user interfaces for our web and mobile applications.',
+    requirements: ['Figma', 'Adobe XD', 'UI/UX Principles'],
+    field: 'Design',
+    duration: '4 months',
+    location: 'Hybrid',
+    deadline: '2024-06-30',
+    isPaid: true,
+    salary: '4500 EGP',
+    status: 'Draft',
+    applicantsCount: 0
+  }
+];
+
 const ManageInternships = () => {
-  const [internships, setInternships] = useState([]);
+  const navigate = useNavigate();
+  const [internships, setInternships] = useState(mockInternships);
   const [showForm, setShowForm] = useState(false);
   const [editingInternship, setEditingInternship] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [fieldFilter, setFieldFilter] = useState('');
+
+  // Get unique values for filters
+  const locations = [...new Set(mockInternships.map(internship => internship.location))];
+  const fields = [...new Set(mockInternships.map(internship => internship.field))];
+  const statuses = [...new Set(mockInternships.map(internship => internship.status))];
+
+  // Filter internships based on search term and filters
+  const filteredInternships = internships.filter(internship => {
+    const matchesSearch = internship.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         internship.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         internship.requirements.some(req => req.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesStatus = !statusFilter || internship.status === statusFilter;
+    const matchesLocation = !locationFilter || internship.location === locationFilter;
+    const matchesField = !fieldFilter || internship.field === fieldFilter;
+
+    return matchesSearch && matchesStatus && matchesLocation && matchesField;
+  });
 
   const handleCreateInternship = (internshipData) => {
     const newInternship = {
@@ -48,6 +118,19 @@ const ManageInternships = () => {
     });
   };
 
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return '#4CAF50';
+      case 'draft':
+        return '#FFA000';
+      case 'closed':
+        return '#F44336';
+      default:
+        return '#67595E';
+    }
+  };
+
   return (
     <div className="manage-internships">
       <div className="header">
@@ -63,6 +146,76 @@ const ManageInternships = () => {
         </button>
       </div>
 
+      {/* Search and Filters */}
+      <div style={{ 
+        background: '#fff', 
+        padding: '16px', 
+        borderRadius: '12px', 
+        marginBottom: '24px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        display: 'grid',
+        gap: '16px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
+      }}>
+        <input
+          type="text"
+          placeholder="Search internships..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
+        >
+          <option value="">All Statuses</option>
+          {statuses.map(status => (
+            <option key={status} value={status}>{status}</option>
+          ))}
+        </select>
+        <select
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
+        >
+          <option value="">All Locations</option>
+          {locations.map(location => (
+            <option key={location} value={location}>{location}</option>
+          ))}
+        </select>
+        <select
+          value={fieldFilter}
+          onChange={(e) => setFieldFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+            fontSize: '14px'
+          }}
+        >
+          <option value="">All Fields</option>
+          {fields.map(field => (
+            <option key={field} value={field}>{field}</option>
+          ))}
+        </select>
+      </div>
+
       {showForm ? (
         <InternshipPostForm
           internship={editingInternship}
@@ -74,12 +227,12 @@ const ManageInternships = () => {
         />
       ) : (
         <div className="internships-list">
-          {internships.length === 0 ? (
+          {filteredInternships.length === 0 ? (
             <div className="no-internships">
-              <p>No internship posts yet. Click "Post New Internship" to create one.</p>
+              <p>No internship posts match your search criteria.</p>
             </div>
           ) : (
-            internships.map(internship => (
+            filteredInternships.map(internship => (
               <div key={internship.id} className="internship-card">
                 <div className="internship-header">
                   <h2>{internship.title}</h2>
@@ -111,7 +264,7 @@ const ManageInternships = () => {
                     <span className="label">Compensation:</span>
                     <span>
                       {internship.isPaid 
-                        ? `Paid - ${internship.salary} AED/month`
+                        ? `Paid - ${internship.salary}`
                         : 'Unpaid'}
                     </span>
                   </div>
@@ -142,9 +295,28 @@ const ManageInternships = () => {
                 {internship.requirements && (
                   <div className="requirements">
                     <strong>Requirements:</strong>
-                    <p>{internship.requirements}</p>
+                    <p>{internship.requirements.join(', ')}</p>
                   </div>
                 )}
+
+                <div className="status">
+                  <strong>Status:</strong>
+                  <span style={{
+                    background: getStatusColor(internship.status),
+                    color: '#fff',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: '500'
+                  }}>
+                    {internship.status}
+                  </span>
+                </div>
+
+                <div className="applicants">
+                  <strong>Applicants:</strong>
+                  <p>{internship.applicantsCount} {internship.applicantsCount === 1 ? 'applicant' : 'applicants'}</p>
+                </div>
               </div>
             ))
           )}

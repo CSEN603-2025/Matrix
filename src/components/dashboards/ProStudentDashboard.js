@@ -214,7 +214,7 @@ const ProStudentDashboard = () => {
             <div style={{ background: '#fff', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px #eee', marginTop: 16 }}>
               <h4 style={{ margin: '0 0 10px' }}>Internships</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                   <button
                     onClick={() => navigate('/pro-student-dashboard/applied-internships')}
                     style={{
@@ -248,6 +248,22 @@ const ProStudentDashboard = () => {
                     Browse Available Internships
                   </button>
                 </div>
+                <button
+                  onClick={() => navigate('/my-reports')}
+                  style={{
+                    background: '#E8B4B8',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 16px',
+                    width: '100%',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  View My Reports
+                </button>
               </div>
             </div>
           </div>

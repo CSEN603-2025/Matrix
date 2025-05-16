@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import { useReports } from '../../context/ReportsContext';
 import InternshipReport from '../internships/InternshipReport';
+import { useNavigate } from 'react-router-dom';
 
 const InternshipReportsList = () => {
-  const { reports, deleteReport } = useReports();
+  const { reports, deleteReport, submitReport } = useReports();
   const [selectedReport, setSelectedReport] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const handleDelete = (reportId) => {
     if (window.confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
       deleteReport(reportId);
+    }
+  };
+
+  const handleSubmit = (report) => {
+    if (window.confirm('Are you sure you want to submit this report? Once submitted, it cannot be edited.')) {
+      submitReport(report.id);
     }
   };
 
@@ -24,138 +32,112 @@ const InternshipReportsList = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  return (
-    <div style={{ padding: 24 }}>
-      <h2>My Internship Reports</h2>
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Approved':
+        return '#4CAF50';
+      case 'Pending Review':
+        return '#FFA000';
+      case 'Rejected':
+        return '#F44336';
+      case 'Draft':
+        return '#67595E';
+      default:
+        return '#67595E';
+    }
+  };
 
-      {/* Search Bar */}
-      <div style={{ 
-        background: '#fff',
-        padding: 20,
-        borderRadius: 8,
-        marginBottom: 24,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <input
-          type="text"
-          placeholder="Search reports by title..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px 16px',
-            borderRadius: 8,
-            border: '1px solid #ddd',
-            fontSize: '14px'
-          }}
-        />
+  return (
+    <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ color: '#67595E', marginBottom: '8px' }}>My Reports</h1>
+        <p style={{ color: '#A49393' }}>View and manage your internship reports</p>
       </div>
 
-      {/* Reports List */}
-      <div style={{ display: 'grid', gap: 20 }}>
-        {filteredReports.length > 0 ? (
-          filteredReports.map(report => (
-            <div
-              key={report.id}
-              style={{
-                background: '#fff',
-                borderRadius: 8,
-                padding: 20,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'flex-start',
-                marginBottom: 16 
-              }}>
-                <div>
-                  <h3 style={{ margin: 0, color: '#2196F3' }}>{report.title}</h3>
-                  <p style={{ 
-                    margin: '8px 0', 
-                    color: '#666',
-                    fontSize: '0.9em'
-                  }}>
-                    Last modified: {formatDate(report.lastModified)}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button
-                    onClick={() => {
-                      setSelectedReport(report);
-                      setShowReport(true);
-                      setIsEditing(false);
-                    }}
-                    style={{
-                      background: '#2196F3',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: 20,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Read
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedReport(report);
-                      setShowReport(true);
-                      setIsEditing(true);
-                    }}
-                    style={{
-                      background: '#E8B4B8',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: 20,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(report.id)}
-                    style={{
-                      background: '#f44336',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: 20,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ color: '#666' }}>
-                <p style={{ 
-                  margin: '0 0 8px 0',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  lineHeight: 1.5
-                }}>
-                  {report.introduction}
-                </p>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div style={{
-            background: '#fff',
-            borderRadius: 8,
-            padding: 40,
-            textAlign: 'center',
-            color: '#666'
-          }}>
-            {searchQuery ? 'No reports found matching your search' : 'No reports have been created yet'}
-          </div>
-        )}
+      <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#E8B4B8' }}>
+              <th style={{ padding: '16px', color: '#fff', textAlign: 'left' }}>Report Title</th>
+              <th style={{ padding: '16px', color: '#fff', textAlign: 'left' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reports.map((report) => (
+              <tr key={report.id} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: '16px' }}>{report.title}</td>
+                <td style={{ padding: '16px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setSelectedReport(report);
+                        setShowReport(true);
+                        setIsEditing(false);
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        background: '#fff',
+                        color: '#E8B4B8',
+                        border: '1px solid #E8B4B8',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      View
+                    </button>
+                    {report.status !== 'Submitted' && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setSelectedReport(report);
+                            setShowReport(true);
+                            setIsEditing(true);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            background: '#E8B4B8',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleSubmit(report)}
+                          style={{
+                            padding: '8px 16px',
+                            background: '#4CAF50',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Submit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(report.id)}
+                          style={{
+                            padding: '8px 16px',
+                            background: '#F44336',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Report Modal */}

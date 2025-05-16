@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import CompanyRegistrationView from '../CompanyRegistrationView';
+import { addCompanyStatusNotification } from '../../services/notificationService';
+import { toast } from 'react-hot-toast';
 
 // Mock data
 const summary = {
@@ -176,6 +178,41 @@ const SCADOfficeDashboard = () => {
   const [showCallerLeft, setShowCallerLeft] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [showCompanyDetails, setShowCompanyDetails] = useState(false);
+  const [companiesList, setCompanies] = useState([
+    { 
+      id: 1, 
+      name: 'Tech Innovators', 
+      status: 'Active', 
+      internships: 2,
+      companyName: 'Tech Innovators',
+      industry: 'Technology',
+      companySize: '201-500 employees',
+      companyEmail: 'hr@techinnovators.com',
+      registrationDate: '2024-05-01'
+    },
+    { 
+      id: 2, 
+      name: 'Green Energy', 
+      status: 'Pending', 
+      internships: 0,
+      companyName: 'Green Energy',
+      industry: 'Energy',
+      companySize: '51-200 employees',
+      companyEmail: 'contact@greenenergy.com',
+      registrationDate: '2024-05-08'
+    },
+    { 
+      id: 3, 
+      name: 'Digital Solutions', 
+      status: 'Pending', 
+      internships: 0,
+      companyName: 'Digital Solutions',
+      industry: 'Technology',
+      companySize: '51-200 employees',
+      companyEmail: 'info@digitalsolutions.com',
+      registrationDate: '2024-05-09'
+    }
+  ]);
 
   // Filtered lists (mock logic)
   const filteredStudents = students.filter(s =>
@@ -183,7 +220,7 @@ const SCADOfficeDashboard = () => {
     (!studentFilter.major || s.major === studentFilter.major) &&
     (!studentFilter.status || s.status === studentFilter.status)
   );
-  const filteredCompanies = companies.filter(c =>
+  const filteredCompanies = companiesList.filter(c =>
     !companyFilter || c.status === companyFilter
   );
   const filteredApps = applications.filter(a =>
@@ -239,27 +276,41 @@ const SCADOfficeDashboard = () => {
   };
 
   const handleApproveCompany = (company) => {
-    // Here you would typically make an API call to approve the company
-    console.log('Approving company:', company);
-    const updatedCompanies = companies.map(c => 
+    // Update company status
+    const updatedCompanies = companiesList.map(c =>
       c.id === company.id ? { ...c, status: 'Active' } : c
     );
-    // Update companies list
-    companies.splice(0, companies.length, ...updatedCompanies);
+    setCompanies(updatedCompanies);
+    
+    // Send notification to company
+    addCompanyStatusNotification(
+      company.id, 
+      'approved', 
+      `Congratulations! ${company.name}'s registration has been approved. You can now post internship opportunities.`
+    );
+    
     setShowCompanyDetails(false);
     setSelectedCompany(null);
+    toast.success('Company approved successfully');
   };
 
   const handleRejectCompany = (company) => {
-    // Here you would typically make an API call to reject the company
-    console.log('Rejecting company:', company);
-    const updatedCompanies = companies.map(c => 
+    // Update company status
+    const updatedCompanies = companiesList.map(c =>
       c.id === company.id ? { ...c, status: 'Rejected' } : c
     );
-    // Update companies list
-    companies.splice(0, companies.length, ...updatedCompanies);
+    setCompanies(updatedCompanies);
+    
+    // Send notification to company
+    addCompanyStatusNotification(
+      company.id, 
+      'rejected', 
+      `${company.name}'s registration has been rejected. Please contact SCAD office for more information.`
+    );
+    
     setShowCompanyDetails(false);
     setSelectedCompany(null);
+    toast.info('Company rejected');
   };
 
   // Add before the return statement
@@ -1055,7 +1106,7 @@ const SCADOfficeDashboard = () => {
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
           <select value={appFilter.company} onChange={e => setAppFilter({ ...appFilter, company: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
             <option value="">All Companies</option>
-            {companies.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            {companiesList.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
           </select>
           <select value={appFilter.student} onChange={e => setAppFilter({ ...appFilter, student: e.target.value })} style={{ padding: 6, borderRadius: 6, border: '1px solid #ccc' }}>
             <option value="">All Students</option>

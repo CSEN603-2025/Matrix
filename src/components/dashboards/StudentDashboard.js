@@ -278,6 +278,22 @@ const StudentDashboard = () => {
                 >
                   Browse Available Internships
                 </button>
+                <button
+                  onClick={() => navigate('/my-reports')}
+                  style={{
+                    background: '#E8B4B8',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 16px',
+                    width: '100%',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  View My Reports
+                </button>
               </div>
             </div>
 
