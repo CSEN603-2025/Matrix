@@ -5,6 +5,7 @@ import { EvaluationsProvider } from './context/EvaluationsContext';
 import { ReportsProvider } from './context/ReportsContext';
 import { CoursesProvider } from './context/CoursesContext';
 import { CompanyDashboardProvider } from './contexts/CompanyDashboardContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -307,14 +308,18 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <EvaluationsProvider>
-          <ReportsProvider>
-            <CoursesProvider>
-              <AppContent />
-              <ToastContainer position="bottom-right" />
-            </CoursesProvider>
-          </ReportsProvider>
-        </EvaluationsProvider>
+        <NotificationProvider>
+          <EvaluationsProvider>
+            <ReportsProvider>
+              <CoursesProvider>
+                <CompanyDashboardProvider>
+                  <AppContent />
+                  <ToastContainer position="bottom-right" />
+                </CompanyDashboardProvider>
+              </CoursesProvider>
+            </ReportsProvider>
+          </EvaluationsProvider>
+        </NotificationProvider>
       </AuthProvider>
     </Router>
   );

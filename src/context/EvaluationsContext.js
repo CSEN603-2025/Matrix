@@ -7,6 +7,7 @@ const initialEvaluations = [
     companyName: 'Tech Innovators Inc.',
     position: 'Frontend Developer',
     period: 'Jan 2024 - Apr 2024',
+    status: 'Current',
     evaluation: {
       workEnvironment: 4,
       learningOpportunities: 5,
@@ -24,6 +25,7 @@ const initialEvaluations = [
     companyName: 'Data Analytics Co.',
     position: 'Data Analyst Intern',
     period: 'Jun 2023 - Aug 2023',
+    status: 'Completed',
     evaluation: {
       workEnvironment: 5,
       learningOpportunities: 4,
@@ -34,6 +36,40 @@ const initialEvaluations = [
       pros: 'Excellent mentorship, real-world projects',
       cons: 'Work hours can be long',
       additionalComments: 'Great place to start your career'
+    }
+  },
+  {
+    id: 3,
+    companyName: 'Cloud Solutions Ltd.',
+    position: 'Cloud Engineering Intern',
+    period: 'Jan 2024 - Present',
+    status: 'Current',
+    evaluation: null
+  },
+  {
+    id: 4,
+    companyName: 'Digital Marketing Pro',
+    position: 'Marketing Intern',
+    period: 'Jan 2024 - Present',
+    status: 'Current',
+    evaluation: null
+  },
+  {
+    id: 5,
+    companyName: 'Software Solutions Inc.',
+    position: 'Backend Developer',
+    period: 'Jan 2024 - Present',
+    status: 'Current',
+    evaluation: {
+      workEnvironment: 5,
+      learningOpportunities: 5,
+      mentorship: 4,
+      workLifeBalance: 4,
+      overallRating: 4.5,
+      recommend: true,
+      pros: 'Strong technical mentorship, modern tech stack',
+      cons: 'Complex projects can be challenging',
+      additionalComments: 'Great opportunity for technical growth'
     }
   }
 ];

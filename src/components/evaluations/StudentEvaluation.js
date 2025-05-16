@@ -22,27 +22,51 @@ const mockEvaluations = [
   }
 ];
 
-const StudentEvaluation = () => {
-  const [evaluations, setEvaluations] = useState(mockEvaluations);
-  const [showEvaluationForm, setShowEvaluationForm] = useState(false);
-  const [selectedEvaluation, setSelectedEvaluation] = useState(null);
+const StudentEvaluation = ({ intern, onClose, onSave, isEditing = false }) => {
   const [formData, setFormData] = useState({
-    studentId: '',
-    studentName: '',
-    internshipTitle: '',
-    completionDate: '',
-    technicalSkills: 0,
-    communicationSkills: 0,
-    problemSolving: 0,
-    initiative: 0,
-    teamwork: 0,
-    punctuality: 0,
-    overallPerformance: 0,
-    strengths: '',
-    areasForImprovement: '',
-    additionalComments: '',
-    status: 'Completed'
+    studentId: intern?.studentId || '',
+    studentName: intern?.studentName || '',
+    internshipTitle: intern?.post || '',
+    completionDate: intern?.completionDate || new Date().toISOString().split('T')[0],
+    technicalSkills: intern?.technicalSkills || 0,
+    communicationSkills: intern?.communicationSkills || 0,
+    problemSolving: intern?.problemSolving || 0,
+    initiative: intern?.initiative || 0,
+    teamwork: intern?.teamwork || 0,
+    punctuality: intern?.punctuality || 0,
+    overallPerformance: intern?.overallPerformance || 0,
+    strengths: intern?.strengths || '',
+    areasForImprovement: intern?.areasForImprovement || '',
+    additionalComments: intern?.additionalComments || '',
+    status: intern?.status || 'Completed'
   });
+
+  // If intern is not provided, return null or an error message
+  if (!intern) {
+    return (
+      <div style={{ 
+        padding: '24px',
+        textAlign: 'center',
+        color: '#67595E'
+      }}>
+        <h2>Error: No intern data provided</h2>
+        <button
+          onClick={onClose}
+          style={{
+            padding: '12px 24px',
+            border: '1px solid #E8B4B8',
+            borderRadius: '8px',
+            background: 'transparent',
+            color: '#E8B4B8',
+            cursor: 'pointer',
+            marginTop: '16px'
+          }}
+        >
+          Close
+        </button>
+      </div>
+    );
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -54,312 +78,253 @@ const StudentEvaluation = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (selectedEvaluation) {
-      // Update existing evaluation
-      setEvaluations(evaluations.map(evaluation => 
-        evaluation.id === selectedEvaluation.id ? { ...formData, id: evaluation.id } : evaluation
-      ));
-    } else {
-      // Create new evaluation
-      setEvaluations([...evaluations, { ...formData, id: Date.now() }]);
-    }
-    handleCloseForm();
+    onSave(formData);
   };
 
-  const handleEdit = (evaluation) => {
-    setSelectedEvaluation(evaluation);
-    setFormData(evaluation);
-    setShowEvaluationForm(true);
+  const calculateOverallPerformance = () => {
+    const skills = [
+      formData.technicalSkills,
+      formData.communicationSkills,
+      formData.problemSolving,
+      formData.initiative,
+      formData.teamwork,
+      formData.punctuality
+    ];
+    const sum = skills.reduce((acc, curr) => acc + Number(curr), 0);
+    return (sum / skills.length).toFixed(1);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this evaluation?')) {
-      setEvaluations(evaluations.filter(evaluation => evaluation.id !== id));
-    }
-  };
-
-  const handleCloseForm = () => {
-    setShowEvaluationForm(false);
-    setSelectedEvaluation(null);
-    setFormData({
-      studentId: '',
-      studentName: '',
-      internshipTitle: '',
-      completionDate: '',
-      technicalSkills: 0,
-      communicationSkills: 0,
-      problemSolving: 0,
-      initiative: 0,
-      teamwork: 0,
-      punctuality: 0,
-      overallPerformance: 0,
-      strengths: '',
-      areasForImprovement: '',
-      additionalComments: '',
-      status: 'Completed'
-    });
-  };
-
-  const EvaluationForm = () => (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        background: '#fff',
-        padding: 24,
-        borderRadius: 8,
-        width: '80%',
-        maxWidth: 800,
-        maxHeight: '90vh',
-        overflow: 'auto'
+  return (
+    <div style={{ padding: '24px' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '24px' 
       }}>
-        <h2>{selectedEvaluation ? 'Edit Evaluation' : 'New Evaluation'}</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 16 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <h2 style={{ color: '#67595E', margin: 0 }}>
+          {isEditing ? 'Edit Evaluation' : 'Evaluate Student'}
+        </h2>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '24px',
+            cursor: 'pointer',
+            color: '#67595E'
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
             <div>
-              <label>Student ID</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Student Name</label>
               <input
                 type="text"
-                name="studentId"
-                value={formData.studentId}
-                onChange={handleInputChange}
-                required
-                style={{ width: '100%', padding: 8, marginTop: 4 }}
+                value={formData.studentName}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  background: '#f5f5f5'
+                }}
               />
             </div>
             <div>
-              <label>Student Name</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Student ID</label>
               <input
                 type="text"
-                name="studentName"
-                value={formData.studentName}
-                onChange={handleInputChange}
-                required
-                style={{ width: '100%', padding: 8, marginTop: 4 }}
+                value={formData.studentId}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  background: '#f5f5f5'
+                }}
               />
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
             <div>
-              <label>Internship Title</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Position</label>
               <input
                 type="text"
-                name="internshipTitle"
                 value={formData.internshipTitle}
-                onChange={handleInputChange}
-                required
-                style={{ width: '100%', padding: 8, marginTop: 4 }}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  background: '#f5f5f5'
+                }}
               />
             </div>
             <div>
-              <label>Completion Date</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Evaluation Date</label>
               <input
                 type="date"
                 name="completionDate"
                 value={formData.completionDate}
                 onChange={handleInputChange}
                 required
-                style={{ width: '100%', padding: 8, marginTop: 4 }}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px'
+                }}
               />
             </div>
           </div>
 
-          <h3>Performance Ratings (1-5)</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <h3 style={{ color: '#67595E', marginBottom: '16px' }}>Performance Ratings (1-5)</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
             {[
-              'technicalSkills',
-              'communicationSkills',
-              'problemSolving',
-              'initiative',
-              'teamwork',
-              'punctuality'
+              { name: 'technicalSkills', label: 'Technical Skills' },
+              { name: 'communicationSkills', label: 'Communication Skills' },
+              { name: 'problemSolving', label: 'Problem Solving' },
+              { name: 'initiative', label: 'Initiative' },
+              { name: 'teamwork', label: 'Teamwork' },
+              { name: 'punctuality', label: 'Punctuality' }
             ].map(skill => (
-              <div key={skill}>
-                <label>{skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
-                <input
-                  type="number"
-                  name={skill}
-                  value={formData[skill]}
-                  onChange={handleInputChange}
-                  min="1"
-                  max="5"
-                  required
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
-                />
+              <div key={skill.name}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>{skill.label}</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[1, 2, 3, 4, 5].map(rating => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => handleInputChange({ target: { name: skill.name, value: rating } })}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        border: formData[skill.name] === rating ? 'none' : '1px solid #E8B4B8',
+                        borderRadius: '20px',
+                        background: formData[skill.name] === rating ? '#E8B4B8' : 'transparent',
+                        color: formData[skill.name] === rating ? '#fff' : '#E8B4B8',
+                        cursor: 'pointer',
+                        fontSize: '16px'
+                      }}
+                    >
+                      {rating}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
 
-          <div>
-            <label>Overall Performance (1-5)</label>
-            <input
-              type="number"
-              name="overallPerformance"
-              value={formData.overallPerformance}
-              onChange={handleInputChange}
-              min="1"
-              max="5"
-              step="0.5"
-              required
-              style={{ width: '100%', padding: 8, marginTop: 4 }}
-            />
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Overall Performance</label>
+            <div style={{ 
+              padding: '16px', 
+              background: '#f5f5f5', 
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span style={{ fontSize: '24px', color: '#67595E' }}>{calculateOverallPerformance()}</span>
+              <span style={{ color: '#FFD700', fontSize: '24px' }}>★</span>
+            </div>
           </div>
 
-          <div>
-            <label>Strengths</label>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Strengths</label>
             <textarea
               name="strengths"
               value={formData.strengths}
               onChange={handleInputChange}
-              required
-              style={{ width: '100%', padding: 8, marginTop: 4, minHeight: 80 }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                minHeight: '80px',
+                resize: 'vertical'
+              }}
+              placeholder="What are the student's key strengths?"
             />
           </div>
 
-          <div>
-            <label>Areas for Improvement</label>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Areas for Improvement</label>
             <textarea
               name="areasForImprovement"
               value={formData.areasForImprovement}
               onChange={handleInputChange}
-              required
-              style={{ width: '100%', padding: 8, marginTop: 4, minHeight: 80 }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                minHeight: '80px',
+                resize: 'vertical'
+              }}
+              placeholder="What areas could the student improve in?"
             />
           </div>
 
-          <div>
-            <label>Additional Comments</label>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#67595E' }}>Additional Comments</label>
             <textarea
               name="additionalComments"
               value={formData.additionalComments}
               onChange={handleInputChange}
-              style={{ width: '100%', padding: 8, marginTop: 4, minHeight: 80 }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                minHeight: '80px',
+                resize: 'vertical'
+              }}
+              placeholder="Any additional feedback or comments?"
             />
           </div>
+        </div>
 
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end', marginTop: 16 }}>
-            <button
-              type="button"
-              onClick={handleCloseForm}
-              style={{
-                padding: '8px 16px',
-                border: '1px solid #ccc',
-                borderRadius: 4,
-                cursor: 'pointer'
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{
-                padding: '8px 16px',
-                background: '#2196F3',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer'
-              }}
-            >
-              {selectedEvaluation ? 'Update' : 'Submit'} Evaluation
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-
-  return (
-    <div style={{ padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h2>Student Evaluations</h2>
-        <button
-          onClick={() => setShowEvaluationForm(true)}
-          style={{
-            padding: '8px 16px',
-            background: '#2196F3',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer'
-          }}
-        >
-          New Evaluation
-        </button>
-      </div>
-
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
-          <thead style={{ background: '#E8B4B8' }}>
-            <tr>
-              <th style={{ padding: 12 }}>Student Name</th>
-              <th style={{ padding: 12 }}>Student ID</th>
-              <th style={{ padding: 12 }}>Internship</th>
-              <th style={{ padding: 12 }}>Completion Date</th>
-              <th style={{ padding: 12 }}>Overall Performance</th>
-              <th style={{ padding: 12 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {evaluations.map(evaluation => (
-              <tr key={evaluation.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: 12 }}>{evaluation.studentName}</td>
-                <td style={{ padding: 12 }}>{evaluation.studentId}</td>
-                <td style={{ padding: 12 }}>{evaluation.internshipTitle}</td>
-                <td style={{ padding: 12 }}>{evaluation.completionDate}</td>
-                <td style={{ padding: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span>{evaluation.overallPerformance}</span>
-                    <span style={{ color: '#FFD700' }}>★</span>
-                  </div>
-                </td>
-                <td style={{ padding: 12 }}>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => handleEdit(evaluation)}
-                      style={{
-                        padding: '4px 8px',
-                        background: '#4CAF50',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 4,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(evaluation.id)}
-                      style={{
-                        padding: '4px 8px',
-                        background: '#F44336',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 4,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showEvaluationForm && <EvaluationForm />}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: '12px 24px',
+              border: '1px solid #E8B4B8',
+              borderRadius: '8px',
+              background: 'transparent',
+              color: '#E8B4B8',
+              cursor: 'pointer'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            style={{
+              padding: '12px 24px',
+              border: 'none',
+              borderRadius: '8px',
+              background: '#E8B4B8',
+              color: '#fff',
+              cursor: 'pointer'
+            }}
+          >
+            {isEditing ? 'Update' : 'Submit'} Evaluation
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

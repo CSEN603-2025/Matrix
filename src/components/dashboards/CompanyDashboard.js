@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import ManageInternships from '../internships/ManageInternships';
+import CurrentInterns from '../internships/CurrentInterns';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { getNotifications, markNotificationAsRead } from '../../services/notificationService';
 import { useCompanyDashboard } from '../../contexts/CompanyDashboardContext';
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import CompanyEvaluationsList from '../evaluations/CompanyEvaluationsList';
 
 // Mock data
 const companyProfile = {
@@ -81,7 +85,7 @@ const acceptedStudents = [
   { name: 'Sara Lee', email: 'sara.lee@email.com', start: '2024-06-10', end: '2024-09-10' },
 ];
 
-const notifications = [
+const mockNotifications = [
   { 
     id: 1,
     type: 'status',
@@ -281,75 +285,43 @@ const NotificationsSection = ({ notifications, handleNotificationClick, getNotif
 const CompanyDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  // Define initial notifications
-  const initialNotifications = [
-    { 
-      id: 1,
-      type: 'status',
-      status: 'approved',
-      message: 'Your company registration has been approved! You can now post internship opportunities.',
-      date: '2024-05-10',
-      isRead: false
-    },
-    { 
-      id: 2,
-      type: 'application',
-      message: 'New application from John Doe',
-      date: '2024-05-10',
-      isRead: false
-    },
-    { 
-      id: 3,
-      type: 'deadline',
-      message: 'Approve applications for Data Analyst by 2024-07-15',
-      date: '2024-05-09',
-      isRead: true
-    },
-    { 
-      id: 4,
-      type: 'admin',
-      message: 'System maintenance on 2024-05-20',
-      date: '2024-05-08',
-      isRead: true
-    },
-  ];
-
-  const [applications, setApplications] = useState(getInitialApplications);
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCurrentInterns, setShowCurrentInterns] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { notifications, markAsRead, addNotification, clearNotifications } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [companyInternships, setCompanyInternships] = useState([]);
+  const [applicationFilter, setApplicationFilter] = useState('');
+  const [internFilter, setInternFilter] = useState('');
+  const [dummyNotificationAdded, setDummyNotificationAdded] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      // In a real app, this would fetch from an API
-      setNotifications(initialNotifications);
+    if (user && !dummyNotificationAdded) {
       setCompanyInternships(mockCompanyInternships);
+      // Clear existing notifications and add dummy notification
+      clearNotifications();
+      addNotification({
+        id: Date.now(),
+        type: 'application',
+        title: 'New Internship Application',
+        message: 'Jane Doe has applied for the Software Engineering Intern position',
+        timestamp: new Date().toISOString(),
+        applicationId: 'dummy-123'
+      });
+      setDummyNotificationAdded(true);
     }
-  }, [user]);
+  }, [user, dummyNotificationAdded]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      setDummyNotificationAdded(false);
+    };
+  }, []);
 
   const handleNotificationClick = (notification) => {
-    if (notification.type === 'status') {
-      setNotifications(prevNotifications =>
-        prevNotifications.map(n =>
-          n.id === notification.id ? { ...n, isRead: true } : n
-        )
-      );
-    } else if (notification.type === 'application') {
-      const application = applications.find(app => app.id === notification.applicationId);
-      if (application) {
-        setSelectedApplicant(application);
-        setShowDetailsModal(true);
-      }
-      setNotifications(prevNotifications =>
-        prevNotifications.map(n =>
-          n.id === notification.id ? { ...n, isRead: true } : n
-        )
-      );
+    markAsRead(notification.id);
+    if (notification.type === 'application' && notification.applicationId) {
+      navigate(`/company-dashboard/applications/${notification.applicationId}`);
     }
   };
 
@@ -357,329 +329,13 @@ const CompanyDashboard = () => {
     switch (type) {
       case 'application':
         return '📝';
+      case 'status':
+        return '📢';
       case 'deadline':
         return '⏰';
-      case 'admin':
-        return '👤';
-      case 'status':
-        return '🔔';
       default:
         return '📌';
     }
-  };
-
-  const getNotificationStyle = (notification) => {
-    if (notification.type === 'status') {
-      return {
-        background: notification.status === 'approved' ? '#E8F5E9' : '#FFEBEE',
-        border: `1px solid ${notification.status === 'approved' ? '#4CAF50' : '#F44336'}`,
-        padding: '12px',
-        marginBottom: '8px',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        opacity: notification.isRead ? 0.8 : 1
-      };
-    }
-    return {
-      padding: '12px',
-      marginBottom: '8px',
-      background: notification.isRead ? '#f8f8f8' : '#fff',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      border: '1px solid #eee',
-      transition: 'all 0.2s ease',
-      opacity: notification.isRead ? 0.8 : 1
-    };
-  };
-
-  const currentInterns = applications.filter(app => app.applicantStatus === 'Current Intern');
-
-  const viewApplicantDetails = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowDetailsModal(true);
-  };
-
-  const ApplicantDetailsModal = ({ applicant, onClose }) => {
-    if (!applicant) return null;
-
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000
-      }}>
-        <div style={{
-          background: '#fff',
-          padding: 24,
-          borderRadius: 8,
-          width: '80%',
-          maxWidth: 600,
-          maxHeight: '90vh',
-          overflow: 'auto'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h2 style={{ margin: 0 }}>Applicant Details</h2>
-            <button 
-              onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '1.5rem',
-                cursor: 'pointer'
-              }}
-            >
-              ×
-            </button>
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ color: '#E8B4B8', marginBottom: 12 }}>Personal Information</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
-              <strong>Name:</strong> <span>{applicant.studentName}</span>
-              <strong>Student ID:</strong> <span>{applicant.studentId}</span>
-              <strong>Major:</strong> <span>{applicant.major}</span>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ color: '#E8B4B8', marginBottom: 12 }}>Application Details</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 8 }}>
-              <strong>Post:</strong> <span>{applicant.post}</span>
-              <strong>Internship Status:</strong> 
-              <span>
-                <span style={{ 
-                  background: internshipStatusColors[applicant.internshipStatus] || '#ccc',
-                  color: '#fff',
-                  padding: '4px 8px',
-                  borderRadius: 6
-                }}>
-                  {applicant.internshipStatus}
-                </span>
-              </span>
-              <strong>Applicant Status:</strong> 
-              <span>
-                <span style={{ 
-                  background: applicantStatusColors[applicant.applicantStatus] || '#ccc',
-                  color: '#fff',
-                  padding: '4px 8px',
-                  borderRadius: 6
-                }}>
-                  {applicant.applicantStatus}
-                </span>
-              </span>
-              <strong>Applied on:</strong> <span>{applicant.date}</span>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ color: '#E8B4B8', marginBottom: 12 }}>Documents</h3>
-            <button 
-              style={{
-                background: '#E8B4B8',
-                color: '#fff',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: 6,
-                cursor: 'pointer'
-              }}
-              onClick={() => window.open(applicant.cv, '_blank')}
-            >
-              View CV
-            </button>
-          </div>
-
-          <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-            <button
-              onClick={onClose}
-              style={{
-                background: '#fff',
-                border: '1px solid #E8B4B8',
-                color: '#E8B4B8',
-                padding: '8px 16px',
-                borderRadius: 6,
-                cursor: 'pointer'
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return '#4CAF50';
-      case 'draft':
-        return '#FFA000';
-      case 'closed':
-        return '#F44336';
-      default:
-        return '#67595E';
-    }
-  };
-
-  const updateApplicationStatus = (applicationId, newStatus) => {
-    setApplications(prevApplications => 
-      prevApplications.map(app => 
-        app.id === applicationId 
-          ? { ...app, internshipStatus: newStatus } 
-          : app
-      )
-    );
-  };
-
-  const CurrentInternsModal = ({ onClose }) => {
-    const currentInterns = applications.filter(app => app.applicantStatus === 'Current Intern');
-
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000
-      }}>
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '24px',
-          width: '90%',
-          maxWidth: '800px',
-          maxHeight: '90vh',
-          overflow: 'auto'
-        }}>
-          {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px',
-            paddingBottom: '16px',
-            borderBottom: '1px solid #eee'
-          }}>
-            <div>
-              <h2 style={{ margin: '0 0 8px', color: '#67595E' }}>Current Interns</h2>
-              <p style={{ margin: 0, color: '#A49393', fontSize: '14px' }}>
-                {currentInterns.length} active {currentInterns.length === 1 ? 'intern' : 'interns'}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#67595E'
-              }}
-            >
-              ×
-            </button>
-          </div>
-
-          {/* Interns List */}
-          <div style={{ display: 'grid', gap: '16px' }}>
-            {currentInterns.length > 0 ? (
-              currentInterns.map((intern) => (
-                <div
-                  key={intern.id}
-                  style={{
-                    background: '#f8f8f8',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto',
-                    gap: '16px'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                      <h3 style={{ margin: 0, color: '#67595E', fontSize: '16px' }}>{intern.studentName}</h3>
-                      <span style={{
-                        background: '#E8B4B8',
-                        color: '#fff',
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '12px'
-                      }}>
-                        {intern.post}
-                      </span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '14px', color: '#67595E' }}>
-                      <div>
-                        <strong>Student ID:</strong> {intern.studentId}
-                      </div>
-                      <div>
-                        <strong>Major:</strong> {intern.major}
-                      </div>
-                      <div>
-                        <strong>Start Date:</strong> {new Date(intern.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => window.open(intern.cv, '_blank')}
-                      style={{
-                        background: '#E8B4B8',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '8px 16px',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <span>View CV</span>
-                    </button>
-                    <button
-                      onClick={() => {/* Add contact functionality */}}
-                      style={{
-                        background: '#fff',
-                        color: '#E8B4B8',
-                        border: '1px solid #E8B4B8',
-                        borderRadius: '4px',
-                        padding: '8px 16px',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <span>Contact</span>
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div style={{ textAlign: 'center', padding: '32px', color: '#A49393' }}>
-                No current interns at the moment
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
   };
 
   const DashboardHome = () => (
@@ -705,7 +361,7 @@ const CompanyDashboard = () => {
 
       {/* Notifications Section */}
       <NotificationsSection 
-        notifications={notifications}
+        notifications={notifications} 
         handleNotificationClick={handleNotificationClick}
         getNotificationIcon={getNotificationIcon}
       />
@@ -717,388 +373,324 @@ const CompanyDashboard = () => {
         gap: '24px',
         marginBottom: '32px'
       }}>
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: '#E8B4B8',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px'
-            }}>
-              📝
-            </div>
-            <div>
-              <h3 style={{ margin: '0 0 4px', color: '#67595E', fontSize: '16px' }}>Pending Applications</h3>
-              <p style={{ margin: '0', fontSize: '24px', fontWeight: '600', color: '#67595E' }}>
-                {applications.filter(app => app.internshipStatus === 'Pending').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: '#E8B4B8',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px'
-            }}>
-              👥
-            </div>
-            <div>
-              <h3 style={{ margin: '0 0 4px', color: '#67595E', fontSize: '16px' }}>Current Interns</h3>
-              <p style={{ margin: '0', fontSize: '24px', fontWeight: '600', color: '#67595E' }}>
-                {applications.filter(app => app.applicantStatus === 'Current Intern').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: '#E8B4B8',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px'
-            }}>
-              💼
-            </div>
-            <div>
-              <h3 style={{ margin: '0 0 4px', color: '#67595E', fontSize: '16px' }}>Active Job Posts</h3>
-              <p style={{ margin: '0', fontSize: '24px', fontWeight: '600', color: '#67595E' }}>
-                {companyInternships.filter(post => post.status === 'Active').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: '#E8B4B8',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px'
-            }}>
-              ⭐
-            </div>
-            <div>
-              <h3 style={{ margin: '0 0 4px', color: '#67595E', fontSize: '16px' }}>Pending Evaluations</h3>
-              <p style={{ margin: '0', fontSize: '24px', fontWeight: '600', color: '#67595E' }}>
-                {currentInterns.length}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          icon="📝"
+          title="Pending Applications"
+          value={getInitialApplications().filter(app => app.internshipStatus === 'Pending').length}
+        />
+        <StatCard
+          icon="👥"
+          title="Current Interns"
+          value={getInitialApplications().filter(app => app.applicantStatus === 'Current Intern').length}
+        />
+        <StatCard
+          icon="💼"
+          title="Active Job Posts"
+          value={companyInternships.filter(post => post.status === 'Active').length}
+        />
+        <StatCard
+          icon="⭐"
+          title="Pending Evaluations"
+          value={getInitialApplications().filter(app => app.applicantStatus === 'Current Intern').length}
+        />
       </div>
 
-      {/* Main Actions Grid */}
+      {/* Applications Section */}
+      <div className="dashboard-section" style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ color: '#67595E', margin: 0 }}>Recent Applications</h3>
+          <button
+            onClick={() => navigate('/applications')}
+            style={{
+              background: '#E8B4B8',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 20px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)'
+            }}
+          >
+            See More
+          </button>
+        </div>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 150, height: 40, marginBottom: 16 }}>
+          <InputLabel id="application-status-label">Status</InputLabel>
+          <Select
+            labelId="application-status-label"
+            value={applicationFilter}
+            label="Status"
+            onChange={e => setApplicationFilter(e.target.value)}
+            style={{ height: 40 }}
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="Pending">Pending</MenuItem>
+            <MenuItem value="Approved">Approved</MenuItem>
+            <MenuItem value="Rejected">Rejected</MenuItem>
+          </Select>
+        </FormControl>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
+          <thead style={{ background: '#E8B4B8' }}>
+            <tr>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Student</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Position</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Date</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Status</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getInitialApplications()
+              .filter(app => !applicationFilter || app.internshipStatus === applicationFilter)
+              .slice(0, 5)
+              .map((app) => (
+                <tr key={app.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: 12 }}>{app.studentName}</td>
+                  <td style={{ padding: 12 }}>{app.post}</td>
+                  <td style={{ padding: 12 }}>{app.date}</td>
+                  <td style={{ padding: 12 }}>
+                    <span style={{ 
+                      background: statusColors[app.internshipStatus] || '#ccc',
+                      color: '#fff',
+                      borderRadius: 8,
+                      padding: '2px 10px'
+                    }}>
+                      {app.internshipStatus}
+                    </span>
+                  </td>
+                  <td style={{ padding: 12 }}>
+                    <button
+                      onClick={() => viewApplicantDetails(app)}
+                      style={{
+                        background: 'none',
+                        border: '1px solid #E8B4B8',
+                        color: '#E8B4B8',
+                        borderRadius: 4,
+                        padding: '4px 12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Current Interns Section */}
+      <div className="dashboard-section" style={{ marginBottom: 32 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ color: '#67595E', margin: 0 }}>Current Interns</h3>
+          <button
+            onClick={() => navigate('/company-dashboard/current-interns')}
+            style={{
+              background: '#E8B4B8',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 20px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem',
+              boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)'
+            }}
+          >
+            See More
+          </button>
+        </div>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 150, height: 40, marginBottom: 16 }}>
+          <InputLabel id="intern-status-label">Status</InputLabel>
+          <Select
+            labelId="intern-status-label"
+            value={internFilter}
+            label="Status"
+            onChange={e => setInternFilter(e.target.value)}
+            style={{ height: 40 }}
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="Active">Active</MenuItem>
+            <MenuItem value="Completed">Completed</MenuItem>
+          </Select>
+        </FormControl>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
+          <thead style={{ background: '#E8B4B8' }}>
+            <tr>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Name</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Position</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Start Date</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Progress</th>
+              <th style={{ padding: 12, textAlign: 'left', color: '#fff' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getInitialApplications().filter(app => app.applicantStatus === 'Current Intern')
+              .filter(intern => !internFilter || intern.status === internFilter)
+              .slice(0, 5)
+              .map((intern) => (
+                <tr key={intern.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: 12 }}>{intern.studentName}</td>
+                  <td style={{ padding: 12 }}>{intern.post}</td>
+                  <td style={{ padding: 12 }}>{intern.date}</td>
+                  <td style={{ padding: 12 }}>
+                    <div style={{ 
+                      width: '100px', 
+                      height: '8px', 
+                      background: '#eee', 
+                      borderRadius: '4px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${intern.progress}%`,
+                        height: '100%',
+                        background: '#E8B4B8',
+                        borderRadius: '4px'
+                      }} />
+                    </div>
+                  </td>
+                  <td style={{ padding: 12 }}>
+                    <button
+                      onClick={() => navigate(`/interns/${intern.id}`)}
+                      style={{
+                        background: 'none',
+                        border: '1px solid #E8B4B8',
+                        color: '#E8B4B8',
+                        borderRadius: 4,
+                        padding: '4px 12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Action Cards Grid */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
         gap: '24px',
         marginBottom: '32px'
       }}>
-        {/* Applications Card */}
-        <div style={{
-          background: '#fff',
-          borderRadius: '16px',
-          padding: '32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: '#E8B4B8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px'
-          }}>
-            📝
-          </div>
-          <div>
-            <h3 style={{ margin: '0 0 12px', color: '#67595E', fontSize: '20px', fontWeight: '600' }}>Applications</h3>
-            <p style={{ margin: '0 0 20px', color: '#A49393', fontSize: '15px', lineHeight: '1.5' }}>
-              Review and manage internship applications. {applications.filter(app => app.internshipStatus === 'Pending').length} pending applications require your attention.
-            </p>
-            <button
-              onClick={() => navigate('/applications')}
-              style={{
-                background: '#E8B4B8',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px 24px',
-                fontSize: '15px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                width: '100%',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <span>View Applications</span>
-              <span>→</span>
-            </button>
-          </div>
-        </div>
+        <ActionCard
+          icon="👥"
+          title="Current Interns"
+          description={`Monitor and manage your current interns. You have ${getInitialApplications().filter(app => app.applicantStatus === 'Current Intern').length} active interns.`}
+          buttonText="View Current Interns"
+          onClick={() => navigate('/company-dashboard/current-interns')}
+        />
+        <ActionCard
+          icon="💼"
+          title="Job Posts"
+          description={`Manage your internship postings. You have ${companyInternships.filter(post => post.status === 'Active').length} active positions.`}
+          buttonText="Manage Job Posts"
+          onClick={() => navigate('/company-dashboard/internships')}
+        />
+        <ActionCard
+          icon="⭐"
+          title="Student Evaluations"
+          description={`Review and evaluate intern performance. ${getInitialApplications().filter(app => app.applicantStatus === 'Current Intern').length} evaluations pending.`}
+          buttonText="View Evaluations"
+          onClick={() => navigate('/company-dashboard/evaluations')}
+        />
+      </div>
+    </div>
+  );
 
-        {/* Current Interns Card */}
+  // Reusable components
+  const StatCard = ({ icon, title, value }) => (
+    <div style={{
+      background: '#fff',
+      borderRadius: '12px',
+      padding: '24px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <div style={{
-          background: '#fff',
-          borderRadius: '16px',
-          padding: '32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+          width: '48px',
+          height: '48px',
+          borderRadius: '12px',
+          background: '#E8B4B8',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '24px'
         }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: '#E8B4B8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px'
-          }}>
-            👥
-          </div>
-          <div>
-            <h3 style={{ margin: '0 0 12px', color: '#67595E', fontSize: '20px', fontWeight: '600' }}>Current Interns</h3>
-            <p style={{ margin: '0 0 20px', color: '#A49393', fontSize: '15px', lineHeight: '1.5' }}>
-              Monitor and manage your current interns. You have {currentInterns.length} active {currentInterns.length === 1 ? 'intern' : 'interns'}.
-            </p>
-            <button
-              onClick={() => setShowCurrentInterns(true)}
-              style={{
-                background: '#E8B4B8',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px 24px',
-                fontSize: '15px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                width: '100%',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <span>View Current Interns</span>
-              <span>→</span>
-            </button>
-          </div>
+          {icon}
         </div>
-
-        {/* Job Posts Card */}
-        <div style={{
-          background: '#fff',
-          borderRadius: '16px',
-          padding: '32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: '#E8B4B8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px'
-          }}>
-            💼
-          </div>
-          <div>
-            <h3 style={{ margin: '0 0 12px', color: '#67595E', fontSize: '20px', fontWeight: '600' }}>Job Posts</h3>
-            <p style={{ margin: '0 0 20px', color: '#A49393', fontSize: '15px', lineHeight: '1.5' }}>
-              Manage your internship postings. You have {companyInternships.filter(post => post.status === 'Active').length} active positions.
-            </p>
-            <button
-              onClick={() => navigate('/company-dashboard/internships')}
-              style={{
-                background: '#E8B4B8',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px 24px',
-                fontSize: '15px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                width: '100%',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <span>Manage Job Posts</span>
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Student Evaluations Card */}
-        <div style={{
-          background: '#fff',
-          borderRadius: '16px',
-          padding: '32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: '#E8B4B8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px'
-          }}>
-            ⭐
-          </div>
-          <div>
-            <h3 style={{ margin: '0 0 12px', color: '#67595E', fontSize: '20px', fontWeight: '600' }}>Student Evaluations</h3>
-            <p style={{ margin: '0 0 20px', color: '#A49393', fontSize: '15px', lineHeight: '1.5' }}>
-              Review and evaluate intern performance. {currentInterns.length} evaluations pending.
-            </p>
-            <button
-              onClick={() => navigate('/company-dashboard/evaluations')}
-              style={{
-                background: '#E8B4B8',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px 24px',
-                fontSize: '15px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                width: '100%',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <span>View Evaluations</span>
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-
-        {/* SCAD Internships Card */}
-        <div style={{
-          background: '#fff',
-          borderRadius: '16px',
-          padding: '32px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '16px',
-            background: '#E8B4B8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px'
-          }}>
-            🎯
-          </div>
-          <div>
-            <h3 style={{ margin: '0 0 12px', color: '#67595E', fontSize: '20px', fontWeight: '600' }}>SCAD Internships</h3>
-            <p style={{ margin: '0 0 20px', color: '#A49393', fontSize: '15px', lineHeight: '1.5' }}>
-              Browse all internship opportunities managed by the SCAD office.
-            </p>
-            <button
-              onClick={() => navigate('/company-dashboard/available-internships')}
-              style={{
-                background: '#E8B4B8',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px 24px',
-                fontSize: '15px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                width: '100%',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              <span>View SCAD Internships</span>
-              <span>→</span>
-            </button>
-          </div>
+        <div>
+          <h3 style={{ margin: '0 0 4px', color: '#67595E', fontSize: '16px' }}>{title}</h3>
+          <p style={{ margin: '0', fontSize: '24px', fontWeight: '600', color: '#67595E' }}>{value}</p>
         </div>
       </div>
     </div>
   );
+
+  const ActionCard = ({ icon, title, description, buttonText, onClick }) => (
+    <div style={{
+      background: '#fff',
+      borderRadius: '16px',
+      padding: '32px',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }}>
+      <div style={{
+        width: '56px',
+        height: '56px',
+        borderRadius: '16px',
+        background: '#E8B4B8',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '28px'
+      }}>
+        {icon}
+      </div>
+      <div>
+        <h3 style={{ margin: '0 0 12px', color: '#67595E', fontSize: '20px', fontWeight: '600' }}>{title}</h3>
+        <p style={{ margin: '0 0 20px', color: '#A49393', fontSize: '15px', lineHeight: '1.5' }}>{description}</p>
+        <button
+          onClick={onClick}
+          style={{
+            background: '#E8B4B8',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '14px 24px',
+            fontSize: '15px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            width: '100%',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <span>{buttonText}</span>
+          <span>→</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  const viewApplicantDetails = (applicant) => {
+    // Implement the logic to view applicant details
+  };
+
+  const CurrentInternsModal = ({ onClose }) => {
+    // Implement the logic to close the current interns modal
+  };
 
   return (
     <Routes>
@@ -1111,6 +703,8 @@ const CompanyDashboard = () => {
         </>
       } />
       <Route path="/internships" element={<ManageInternships />} />
+      <Route path="/current-interns" element={<CurrentInterns />} />
+      <Route path="/evaluations" element={<CompanyEvaluationsList />} />
     </Routes>
   );
 };

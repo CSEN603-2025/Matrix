@@ -44,9 +44,9 @@ const Sidebar = () => {
         return [
           { label: 'Dashboard', path: '/company-dashboard', icon: '📊' },
           { label: 'SCAD Internships', path: '/company-dashboard/available-internships', icon: '🎯' },
+          { label: 'Current Interns', path: '/company-dashboard/current-interns', icon: '👥' },
           { label: 'Job Posts', path: '/company-dashboard/internships', icon: '💼' },
           { label: 'Applications', path: '/applications', icon: '📝' },
-          { label: 'Evaluations', path: '/company-dashboard/evaluations', icon: '📋' },
           { label: 'Messages', path: '/company-dashboard/messages', icon: '💬' }
         ];
       case 'faculty':
@@ -54,9 +54,9 @@ const Sidebar = () => {
           { label: 'Dashboard', path: '/faculty-dashboard', icon: '📊' },
           { label: 'Students', path: '/faculty-dashboard/students', icon: '👥' },
           { label: 'Companies', path: '/faculty-dashboard/companies', icon: '🏢' },
-          { label: 'Reports', path: '/faculty-dashboard/reports', icon: '📈' },
+          { label: 'Reports', path: '/faculty-dashboard/reports', icon: '📄' },
           { label: 'Schedule', path: '/faculty-dashboard/schedule', icon: '📅' },
-          { label: 'Workshops', path: '/faculty-dashboard/workshops', icon: '📅' },
+          { label: 'Workshops', path: '/faculty-dashboard/workshops', icon: '📚' },
           { label: 'Messages', path: '/faculty-dashboard/messages', icon: '💬' }
         ];
       case 'scad_office':
@@ -123,10 +123,9 @@ const Sidebar = () => {
         zIndex: 900,
         transition: 'left 0.3s ease',
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between'
+        flexDirection: 'column'
       }}>
-        <nav style={{ padding: '1rem' }}>
+        <nav style={{ padding: '1rem', flex: '1' }}>
           {getNavigationItems().map((item, index) => (
             <button
               key={index}
@@ -152,30 +151,25 @@ const Sidebar = () => {
             </button>
           ))}
         </nav>
-        {/* Logout Button at the bottom */}
-        <div style={{ padding: '1rem', borderTop: '1px solid #eee' }}>
-          <button
-            onClick={() => { logout(); navigate('/'); }}
-            style={{
-              width: '100%',
-              padding: '0.8rem 1rem',
-              background: '#E8B4B8',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.8rem',
-              marginTop: '1rem',
-              boxShadow: '0 2px 8px rgba(232, 180, 184, 0.08)'
-            }}
-          >
-            <span role="img" aria-label="logout">🚪</span> Logout
-          </button>
-        </div>
+
+        <button
+          onClick={logout}
+          style={{
+            width: '100%',
+            padding: '1rem',
+            background: 'none',
+            border: 'none',
+            borderTop: '1px solid #EED6D3',
+            color: '#A49393',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.8rem'
+          }}
+        >
+          <span style={{ fontSize: '1.2rem' }}>🚪</span>
+          Logout
+        </button>
       </div>
     </>
   );

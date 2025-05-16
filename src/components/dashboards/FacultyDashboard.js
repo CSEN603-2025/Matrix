@@ -30,6 +30,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { Routes, Route } from 'react-router-dom';
+import InternshipReportsList from '../reports/InternshipReportsList';
 
 // Mock data for university report
 const universityReportData = {
@@ -303,154 +305,16 @@ const FacultyDashboard = () => {
   );
 
   return (
-    <div className="dashboard" style={{ padding: 24 }}>
-      {/* Welcome Banner */}
-      <div className="dashboard-banner" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', background: '#EED6D3', padding: '1.5rem', borderRadius: '12px' }}>
-        <div>
-          <h2 style={{ margin: 0 }}>Faculty Dashboard</h2>
-          <div style={{ color: '#67595E', marginTop: 4 }}>Manage and evaluate student internship reports</div>
+    <Routes>
+      <Route path="/" element={
+        <div style={{ padding: '20px' }}>
+          <h2>Faculty Dashboard</h2>
+          {/* Add your dashboard overview content here */}
         </div>
-        <div style={{ marginLeft: 'auto' }}>
-          <button 
-            className="btn btn-secondary"
-            onClick={() => setShowReport(true)}
-          >
-            Generate University Report
-          </button>
-        </div>
-      </div>
-
-      {/* Statistics Cards */}
-      <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-        <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee' }}>
-          <div style={{ fontSize: 18, fontWeight: 600 }}>Accepted Reports</div>
-          <div style={{ fontSize: 32, color: '#4CAF50', fontWeight: 700 }}>{dummyStats.accepted}</div>
-        </div>
-        <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee' }}>
-          <div style={{ fontSize: 18, fontWeight: 600 }}>Rejected Reports</div>
-          <div style={{ fontSize: 32, color: '#F44336', fontWeight: 700 }}>{dummyStats.rejected}</div>
-        </div>
-        <div style={{ background: '#fff', borderRadius: 10, padding: 20, flex: 1, textAlign: 'center', boxShadow: '0 2px 8px #eee' }}>
-          <div style={{ fontSize: 18, fontWeight: 600 }}>Flagged Reports</div>
-          <div style={{ fontSize: 32, color: '#E8B4B8', fontWeight: 700 }}>{dummyStats.flagged}</div>
-        </div>
-      </div>
-
-      {/* Statistics Chart */}
-      <div className="dashboard-section" style={{ marginBottom: 32 }}>
-        <h3 style={{ margin: '0 0 16px' }}>Report Statistics</h3>
-        <div style={{ background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 2px 8px #eee' }}>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#E8B4B8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Reports Table */}
-      <div className="dashboard-section" style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ margin: 0 }}>Internship Reports</h3>
-          <button className="btn btn-primary" onClick={handleGenerateSummary}>Generate Summary Report</button>
-        </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
-          <thead style={{ background: '#E8B4B8' }}>
-            <tr>
-              <th style={{ padding: 12, textAlign: 'left' }}>Student Name</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Company</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Submission Date</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Status</th>
-              <th style={{ padding: 12, textAlign: 'left' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map((report) => (
-              <tr key={report.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: 12 }}>{report.studentName}</td>
-                <td style={{ padding: 12 }}>{report.company}</td>
-                <td style={{ padding: 12 }}>{report.submissionDate}</td>
-                <td style={{ padding: 12 }}>
-                  <span style={{ background: statusColors[report.status] || '#ccc', color: '#fff', borderRadius: 8, padding: '2px 10px', fontWeight: 600 }}>
-                    {report.status}
-                  </span>
-                </td>
-                <td style={{ padding: 12 }}>
-                  <button className="btn btn-primary" onClick={() => handleViewDetails(report)} style={{ marginRight: 8 }}>
-                    View
-                  </button>
-                  <button className="btn btn-secondary" onClick={() => handleDownloadPDF(report.id)}>
-                    Download
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Report Details Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Report Details</DialogTitle>
-        <DialogContent>
-          {selectedReport && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">Student: {selectedReport.studentName}</Typography>
-              <Typography>Company: {selectedReport.company}</Typography>
-              <Typography>Submission Date: {selectedReport.submissionDate}</Typography>
-              <Typography>Status: {selectedReport.status}</Typography>
-              
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="h6">Status Update</Typography>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => handleStatusChange(selectedReport.id, 'Accepted')}
-                  style={{ marginRight: 8 }}
-                >
-                  Accept
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => handleStatusChange(selectedReport.id, 'Rejected')}
-                  style={{ marginRight: 8, color: '#F44336', borderColor: '#F44336' }}
-                >
-                  Reject
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => handleStatusChange(selectedReport.id, 'Flagged')}
-                  style={{ color: '#E8B4B8', borderColor: '#E8B4B8' }}
-                >
-                  Flag
-                </button>
-              </Box>
-
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Clarification Comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                sx={{ mt: 2 }}
-              />
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <button className="btn btn-secondary" onClick={handleCloseDialog}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSubmitComment}>Submit</button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Add the report component */}
-      <UniversityReport />
-    </div>
+      } />
+      <Route path="reports" element={<InternshipReportsList />} />
+      <Route path="*" element={<div>Page not found</div>} />
+    </Routes>
   );
 };
 

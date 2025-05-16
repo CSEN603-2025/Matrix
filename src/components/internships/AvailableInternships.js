@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { sendInternshipApplicationNotification } from '../../services/notificationService';
 import { sendInternshipApplicationEmail } from '../../services/emailService';
 import { toast } from 'react-toastify';
+import { useNotifications } from '../../context/NotificationContext';
 
 const InternshipDetailModal = ({ internship, onClose, onApply }) => {
   const { user } = useAuth();
@@ -25,7 +26,7 @@ const InternshipDetailModal = ({ internship, onClose, onApply }) => {
     }}>
       <div style={{
         background: '#fff',
-        borderRadius: '8px',
+        borderRadius: '12px',
         padding: '32px',
         width: '90%',
         maxWidth: '800px',
@@ -33,7 +34,6 @@ const InternshipDetailModal = ({ internship, onClose, onApply }) => {
         overflowY: 'auto',
         position: 'relative'
       }}>
-        {/* Close Button */}
         <button
           onClick={onClose}
           style={{
@@ -50,96 +50,58 @@ const InternshipDetailModal = ({ internship, onClose, onApply }) => {
           ×
         </button>
 
-        {/* Header Section */}
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-            <h2 style={{ margin: 0, color: '#67595E', fontSize: '24px' }}>{internship.company}</h2>
-            {internship.isNew && (
-              <span style={{
-                backgroundColor: '#E8B4B8',
-                color: '#fff',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontSize: '12px'
-              }}>
-                NEW
-              </span>
-            )}
-          </div>
-          <h3 style={{ margin: '0 0 16px', color: '#67595E', fontWeight: '500' }}>{internship.position}</h3>
+          <h2 style={{ color: '#67595E', margin: '0 0 8px' }}>{internship.position}</h2>
+          <div style={{ color: '#A49393', fontSize: '18px' }}>{internship.company}</div>
         </div>
 
-        {/* Key Details Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '20px',
-          marginBottom: '32px',
-          padding: '20px',
-          background: '#f8f8f8',
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '16px',
+          marginBottom: '24px',
+          padding: '16px',
+          background: '#fafafa',
           borderRadius: '8px'
         }}>
           <div>
-            <label style={{ color: '#A49393', fontSize: '14px' }}>Location</label>
-            <p style={{ margin: '4px 0', color: '#67595E', fontWeight: '500' }}>
-              📍 {internship.location}
-            </p>
+            <div style={{ color: '#67595E', fontWeight: '600', marginBottom: '4px' }}>Location</div>
+            <div>📍 {internship.location}</div>
           </div>
           <div>
-            <label style={{ color: '#A49393', fontSize: '14px' }}>Duration</label>
-            <p style={{ margin: '4px 0', color: '#67595E', fontWeight: '500' }}>
-              ⏱️ {internship.duration}
-            </p>
+            <div style={{ color: '#67595E', fontWeight: '600', marginBottom: '4px' }}>Duration</div>
+            <div>⏱️ {internship.duration}</div>
           </div>
           <div>
-            <label style={{ color: '#A49393', fontSize: '14px' }}>Industry</label>
-            <p style={{ margin: '4px 0', color: '#67595E', fontWeight: '500' }}>
-              🏢 {internship.industry}
-            </p>
+            <div style={{ color: '#67595E', fontWeight: '600', marginBottom: '4px' }}>Industry</div>
+            <div>🏢 {internship.industry}</div>
           </div>
           <div>
-            <label style={{ color: '#A49393', fontSize: '14px' }}>Application Deadline</label>
-            <p style={{ margin: '4px 0', color: '#67595E', fontWeight: '500' }}>
-              📅 {new Date(internship.deadline).toLocaleDateString()}
-            </p>
+            <div style={{ color: '#67595E', fontWeight: '600', marginBottom: '4px' }}>Deadline</div>
+            <div>📅 {new Date(internship.deadline).toLocaleDateString()}</div>
+          </div>
+          <div>
+            <div style={{ color: '#67595E', fontWeight: '600', marginBottom: '4px' }}>Compensation</div>
+            <div>💰 {internship.isPaid ? internship.salary : 'Unpaid'}</div>
           </div>
         </div>
 
-        {/* Payment Information */}
-        <div style={{
-          marginBottom: '24px',
-          padding: '16px',
-          background: internship.isPaid ? '#f1f8f1' : '#f8f8f8',
-          borderRadius: '8px',
-          borderLeft: `4px solid ${internship.isPaid ? '#4CAF50' : '#A49393'}`
-        }}>
-          <h4 style={{ margin: '0 0 8px', color: '#67595E' }}>Payment Information</h4>
-          {internship.isPaid ? (
-            <>
-              <p style={{ margin: '0 0 4px', color: '#4CAF50', fontWeight: '500' }}>Paid Internship</p>
-              <p style={{ margin: '0', color: '#67595E' }}>Monthly Salary: {internship.salary}</p>
-            </>
-          ) : (
-            <p style={{ margin: '0', color: '#A49393' }}>Unpaid Internship</p>
-          )}
-        </div>
-
-        {/* Job Description */}
         <div style={{ marginBottom: '24px' }}>
-          <h4 style={{ margin: '0 0 12px', color: '#67595E' }}>Job Description</h4>
+          <h3 style={{ color: '#67595E', marginBottom: '12px' }}>Description</h3>
           <p style={{ 
-            margin: '0',
-            color: '#67595E',
+            color: '#67595E', 
             lineHeight: '1.6',
-            whiteSpace: 'pre-line'
+            background: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            border: '1px solid #EED6D3'
           }}>
             {internship.description}
           </p>
         </div>
 
-        {/* Required Skills */}
-        <div style={{ marginBottom: '32px' }}>
-          <h4 style={{ margin: '0 0 12px', color: '#67595E' }}>Required Skills</h4>
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={{ color: '#67595E', marginBottom: '12px' }}>Required Skills</h3>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {internship.requirements.map((skill, index) => (
               <span
@@ -158,9 +120,9 @@ const InternshipDetailModal = ({ internship, onClose, onApply }) => {
           </div>
         </div>
 
-        {/* Apply Button - Only show for students and pro students */}
         {canApply && (
           <button
+            onClick={onApply}
             style={{
               width: '100%',
               padding: '16px',
@@ -173,7 +135,6 @@ const InternshipDetailModal = ({ internship, onClose, onApply }) => {
               cursor: 'pointer',
               transition: 'background-color 0.2s ease'
             }}
-            onClick={onApply}
           >
             Apply for this Internship
           </button>
@@ -186,6 +147,7 @@ const InternshipDetailModal = ({ internship, onClose, onApply }) => {
 // New Application Modal Component
 const ApplicationModal = ({ internship, onClose }) => {
   const { user } = useAuth();
+  const { addNotification } = useNotifications();
   const [files, setFiles] = useState({
     cv: null,
     coverLetter: null,
@@ -201,7 +163,7 @@ const ApplicationModal = ({ internship, onClose }) => {
     try {
       // Create application object
       const application = {
-        id: Date.now(), // In a real app, this would be generated by the backend
+        id: Date.now(),
         studentId: user.id,
         studentName: user.name,
         position: internship.position,
@@ -216,6 +178,16 @@ const ApplicationModal = ({ internship, onClose }) => {
         id: internship.companyId,
         name: internship.company,
         companyEmail: internship.companyEmail
+      });
+
+      // Add notification for the company
+      addNotification({
+        recipientId: internship.companyId,
+        recipientType: 'company',
+        type: 'application',
+        title: 'New Internship Application',
+        message: `${user.name} has applied for the ${internship.position} position`,
+        category: 'internship_application'
       });
 
       sendInternshipApplicationNotification(application, {
@@ -654,50 +626,38 @@ const AvailableInternships = () => {
               borderRadius: '8px',
               padding: '20px',
               boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              cursor: 'pointer'
+            }}
+            onClick={() => {
+              setSelectedInternship(internship);
+              setShowApplicationModal(false);
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <h3 style={{ margin: 0, color: '#67595E', fontSize: '18px' }}>{internship.company}</h3>
-                  {internship.isNew && (
-                    <span style={{
-                      backgroundColor: '#E8B4B8',
-                      color: '#fff',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px'
-                    }}>
-                      NEW
-                    </span>
-                  )}
+                <h3 style={{ margin: '0 0 8px', color: '#67595E', fontSize: '18px' }}>{internship.position}</h3>
+                <p style={{ margin: '0 0 16px', color: '#A49393', fontSize: '14px' }}>{internship.company}</p>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#67595E', fontSize: '14px' }}>
+                    📍 {internship.location}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#67595E', fontSize: '14px' }}>
+                    ⏱️ {internship.duration}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#67595E', fontSize: '14px' }}>
+                    💰 {internship.isPaid ? `${internship.salary}` : 'Unpaid'}
+                  </span>
                 </div>
-                <h4 style={{ margin: '0 0 12px', color: '#67595E', fontWeight: '500' }}>{internship.position}</h4>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '16px', 
-                  color: '#A49393', 
-                  fontSize: '14px',
-                  marginBottom: '12px'
-                }}>
-                  <span>📍 {internship.location}</span>
-                  <span>⏱️ {internship.duration}</span>
-                  <span>🏢 {internship.industry}</span>
-                  <span>📅 Due: {new Date(internship.deadline).toLocaleDateString()}</span>
-                </div>
-                <div style={{ fontSize: '14px', color: '#67595E', marginBottom: '12px' }}>
-                  {internship.description}
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {internship.requirements.map((req, index) => (
                     <span
                       key={index}
                       style={{
                         background: '#EED6D3',
                         color: '#67595E',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
+                        padding: '4px 12px',
+                        borderRadius: '16px',
                         fontSize: '12px'
                       }}
                     >
@@ -706,51 +666,28 @@ const AvailableInternships = () => {
                   ))}
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                {internship.isPaid ? (
-                  <div style={{ 
-                    color: '#4CAF50', 
-                    fontWeight: '500',
+              {canApply && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedInternship(internship);
+                    setShowApplicationModal(true);
+                  }}
+                  style={{
+                    background: '#E8B4B8',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 16px',
+                    cursor: 'pointer',
                     fontSize: '14px',
-                    marginBottom: '8px'
-                  }}>
-                    Paid Internship
-                    <div style={{ color: '#67595E', fontSize: '12px' }}>
-                      {internship.salary}/month
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ 
-                    color: '#A49393', 
                     fontWeight: '500',
-                    fontSize: '14px',
-                    marginBottom: '8px'
-                  }}>
-                    Unpaid Internship
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <button
-                    onClick={() => {
-                      setSelectedInternship(internship);
-                      setShowApplicationModal(true);
-                    }}
-                    style={{
-                      background: '#EED6D3',
-                      color: '#67595E',
-                      border: 'none',
-                      borderRadius: '4px',
-                      padding: '8px 16px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                  >
-                    Apply Now
-                  </button>
-                </div>
-              </div>
+                    transition: 'background-color 0.2s ease'
+                  }}
+                >
+                  Apply Now
+                </button>
+              )}
             </div>
           </div>
         ))}
